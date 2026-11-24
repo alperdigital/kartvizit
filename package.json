@@ -1,0 +1,56 @@
+{
+  "name": "kartvizit",
+  "version": "1.0.0",
+  "description": "Cihazda çalışan kartvizit tarayıcı ve arşiv",
+  "scripts": {
+    "predev": "node scripts/ocr-assets.mjs && node scripts/licenses.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/ocr-assets.mjs && node scripts/licenses.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "typecheck": "tsc",
+    "test": "vitest run tests/unit.test.ts",
+    "e2e": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alperdigital/kartvizit.git"
+  },
+  "license": "UNLICENSED",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/alperdigital/kartvizit/issues"
+  },
+  "homepage": "https://github.com/alperdigital/kartvizit#readme",
+  "dependencies": {
+    "@tesseract.js-data/eng": "1.0.0",
+    "@tesseract.js-data/tur": "1.0.0",
+    "dexie": "4.4.7",
+    "libphonenumber-js": "1.13.17",
+    "lucide-react": "1.79.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tesseract.js": "7.0.0",
+    "write-excel-file": "4.1.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.65.1",
+    "@tailwindcss/vite": "4.3.5",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "eslint": "9.39.5",
+    "fake-indexeddb": "6.2.8",
+    "tailwindcss": "4.3.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.74.0",
+    "vite": "7.3.8",
+    "vite-plugin-pwa": "2.0.0",
+    "vitest": "5.1.1"
+  },
+  "private": true
+}
