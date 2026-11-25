@@ -21,13 +21,11 @@ Kartvizit, fiziksel kartvizitleri Türkçe ve İngilizce OCR ile okuyup yerel bi
 
 ## Claude ile sunucusuz kullanım
 
-1. Ayarlar → Claude ile kartvizit okuma bölümünden Artifact kurulum talimatını indirin.
-2. Claude hesabınızda AI destekli bir Artifact oluşturmak veya mevcut Artifact'ı güncellemek için talimatı kullanın. Kişisel depolamayı seçin.
-3. Artifact bağlantısını Ayarlar'a girin ve Claude’da açın. Görselleri Claude ortamında analiz edin; izin ve plan koşulları Claude'a aittir.
-4. Artifact'tan Kartvizit JSON dosyasını alın, PWA'da dosyayı seçin veya JSON'u yapıştırın. Önizlemeyi kontrol edip arşive aktarın.
-5. Offline eklediğiniz kartları Claude’a taşımak için fotoğrafsız JSON indirin ve Artifact'a aktarın.
+**Tara → Claude ile Tara** bölümünde, doğrulanmış ve yapılandırılmış bir Artifact bağlantısı varsa Claude’u açabilirsiniz. İnternet ve Claude hesabı gerekir; PWA hesap oturumunu görmez ve örnek bağlantı kullanmaz. Artifact bağlantısı yoksa da Kartvizit v1 JSON aktarımı, yerel OCR ve manuel arşiv çalışır.
 
-Her iki yönde mevcut Kartvizit v1 yedek biçimi kullanılır, ancak fotoğraf ve ham OCR metni gönderilmez. Aynı kimlikli daha yeni kayıtlar güncellenir; eşit tarihli çakışmalar ve farklı kimlikli benzer kayıtlar atlanır. Silmeler aktarılmaz. İçe aktarma otomatik eşitleme değildir. PWA Claude hesap oturumuna erişmez; kullanıcı Claude içinde giriş yapar. Artifact'ın AI görsel girişi ve kişisel depolama özellikleri hedef hesap/cihazda doğrulanmalıdır. PWA'nın mevcut offline tarama ve tam yedekleme özellikleri değişmez.
+Aktarım önizleme ve açık kullanıcı onayı gerektirir. Fotoğraflar ve ham OCR aktarımda çıkarılır; tam yerel yedek davranışı değişmez. Otomatik eşitleme veya silme yayılımı yoktur. Claude içi AI ve kişisel depolama, gerçek hesapta doğrulanana kadar üretim özelliği olarak sunulmaz.
+
+[Mimari](docs/ARCHITECTURE.md) · [Claude entegrasyonu](docs/CLAUDE-INTEGRATION.md) · [Artifact yayınlama](docs/ARTIFACT-DEPLOYMENT.md) · [Test](docs/TESTING.md) · [Gizlilik](docs/PRIVACY.md) · [Kullanım](docs/USER-GUIDE.md)
 
 ## Veri ve yedekleme
 
@@ -48,6 +46,7 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run build:artifact
 npx playwright install chromium
 npm run e2e
 ```

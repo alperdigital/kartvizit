@@ -3,7 +3,7 @@ import { Archive as ArchiveIcon, ArrowDownWideNarrow, Building2, ChevronDown, Co
 import { labelOf,matches,type Card } from '../services/cards'
 import type { Translate } from '../i18n'
 
-export function Archive({data,favorites,t,scan,manual,detail,favorite,exportCards,deleteCards,tagCards}:{data:Card[];favorites:boolean;t:Translate;scan:()=>void;manual:()=>void;detail:(id:string)=>void;favorite:(card:Card)=>void;exportCards:(cards:Card[])=>void;deleteCards:(cards:Card[])=>void;tagCards:(cards:Card[])=>void}) {
+export function Archive({data,favorites,t,scan,claude,manual,detail,favorite,exportCards,deleteCards,tagCards}:{data:Card[];favorites:boolean;t:Translate;scan:()=>void;claude:()=>void;manual:()=>void;detail:(id:string)=>void;favorite:(card:Card)=>void;exportCards:(cards:Card[])=>void;deleteCards:(cards:Card[])=>void;tagCards:(cards:Card[])=>void}) {
   const [query,setQuery]=useState('')
   const [debounced,setDebounced]=useState('')
   const [company,setCompany]=useState('')
@@ -25,7 +25,7 @@ export function Archive({data,favorites,t,scan,manual,detail,favorite,exportCard
   return <section className="archive-flow">
     <div className="page-heading archive-heading"><div><p className="eyebrow"><span/>{t('KİŞİSEL ÇALIŞMA ALANI','PERSONAL WORKSPACE')}</p><h1>{favorites?t('Favoriler','Favorites'):t('Kartvizitler','Business cards')}</h1><p>{favorites?t('Yıldızladığınız kişilere hızlıca ulaşın.','Get to your starred contacts quickly.'):t('İş bağlantılarınızı tek bir yerden yönetin.','Manage all your business contacts in one place.')}</p></div><div className="actions"><button onClick={()=>exportCards(data)} disabled={!data.length}><Download/>{t('Dışa aktar','Export')}</button><button onClick={manual}><Plus/>{t('Manuel ekle','Add manually')}</button></div></div>
     {!favorites&&<div className="hero">
-      <div className="hero-copy"><div className="hero-badge"><ScanLine/>{t('AKILLI TARAMA','SMART SCAN')}</div><h2>{t('Kartvizit tara','Scan a card')}</h2><p>{t('Bir fotoğraf çekin ya da galeriden seçin. İletişim bilgileri otomatik olarak doldurulsun.','Take a photo or choose one from your gallery to fill in contact details automatically.')}</p><button onClick={scan}><ScanLine/>{t('Kartvizit Tara','Scan a Card')}</button></div>
+      <div className="hero-copy"><div className="hero-badge"><ScanLine/>{t('AKILLI TARAMA','SMART SCAN')}</div><h2>{t('Kartvizit tara','Scan a card')}</h2><p>{t('Bir fotoğraf çekin ya da galeriden seçin. İletişim bilgileri otomatik olarak doldurulsun.','Take a photo or choose one from your gallery to fill in contact details automatically.')}</p><button onClick={scan}><ScanLine/>{t('Kartvizit Tara','Scan a Card')}</button>{!data.length&&<button onClick={claude}>{t('Claude ile Tara','Scan with Claude')}</button>}</div>
       <div className="hero-art" aria-hidden="true"><div className="art-grid"/><div className="art-card art-back"/><div className="art-card art-front"><div className="art-avatar"><ContactRound/></div><div className="art-lines"><i/><i/><i/></div><div className="art-bottom"><i/><i/></div></div><div className="focus-frame"><i/><i/><i/><i/></div><div className="art-scan"/></div>
     </div>}
     {!favorites&&<div className="metrics">

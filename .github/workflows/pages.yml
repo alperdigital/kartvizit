@@ -23,6 +23,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+        env:
+          VITE_CLAUDE_ARTIFACT_URL: ${{ vars.VITE_CLAUDE_ARTIFACT_URL }}
+      - run: npm run build:artifact
       - run: npx playwright install --with-deps chromium
       - run: npm run e2e
       - uses: actions/upload-pages-artifact@v3

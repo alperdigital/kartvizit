@@ -1,0 +1,50 @@
+{
+  "fixtureType": "synthetic",
+  "cases": {
+    "deniz": {
+      "fullName": "Deniz Örnek",
+      "jobTitle": "Uluslararası Ürün ve Tasarım Direktörü",
+      "company": "Örnek Teknoloji A.Ş.",
+      "department": "Tasarım",
+      "emailAddresses": [
+        "deniz@example.test",
+        "studio@example.test"
+      ],
+      "phoneNumbers": [
+        {
+          "number": "+902125550142",
+          "kind": "work"
+        },
+        {
+          "number": "+12025550142",
+          "kind": "work"
+        }
+      ],
+      "addresses": [
+        {
+          "street": "Örnek Sokak 12, Kat 3",
+          "city": "İstanbul",
+          "country": "Türkiye",
+          "postalCode": "34710"
+        }
+      ]
+    },
+    "english": {
+      "company": "Example Studio",
+      "fullName": "",
+      "jobTitle": "Research & Product Operations",
+      "emailAddresses": [
+        "team@example.test"
+      ]
+    }
+  },
+  "edgeCases": [
+    "rotate SVG raster by 90 degrees",
+    "omit company field",
+    "repeat UUID",
+    "equal timestamp divergent content",
+    "legacy version 1 with photos",
+    "malformed JSON",
+    "notes starting with ="
+  ]
+}

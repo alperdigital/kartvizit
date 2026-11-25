@@ -25,7 +25,7 @@ export function Settings({t,value,change,prepare,ocrStatus,onExport,onDelete,not
       </div>
       <div className="section-heading"><div><h3>{t('Çevrimdışı tarama','Offline scanning')}</h3><p role="status">{ocrStatus}</p></div><button onClick={prepare}><Download/>{t('OCR kaynaklarını indir','Download OCR resources')}</button></div>
     </div>
-    <ClaudeTransfer t={t} notify={notify}/>
+    <ClaudeTransfer t={t} notify={notify} setup/>
     <div className="panel screen-flow">
       <h2><Database/>{t('Veri ve yedekleme','Data and backup')}</h2>
       <p>{t('JSON yedeğini cihaz dışında saklayarak arşivinizi koruyabilirsiniz. İçe aktarma mevcut kayıtları korur.','Keep a JSON backup outside this device to protect your archive. Importing preserves existing records.')}</p>
