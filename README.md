@@ -19,6 +19,16 @@ Kartvizit, fiziksel kartvizitleri Türkçe ve İngilizce OCR ile okuyup yerel bi
 - **Android Chrome** üzerinden üç nokta → Uygulamayı yükle veya Ana ekrana ekle.
 - İnternete bağlıyken **Ayarlar → OCR kaynaklarını indir** seçeneğini kullanın. Yaklaşık 17 MB OCR kaynağı indirilir. **Çevrimdışı tarama hazır** durumu göründüğünde uygulamayı bağlantısız açabilir, tarayabilir ve dışa aktarabilirsiniz.
 
+## Claude ile sunucusuz kullanım
+
+1. Ayarlar → Claude ile kartvizit okuma bölümünden Artifact kurulum talimatını indirin.
+2. Claude hesabınızda AI destekli bir Artifact oluşturmak veya mevcut Artifact'ı güncellemek için talimatı kullanın. Kişisel depolamayı seçin.
+3. Artifact bağlantısını Ayarlar'a girin ve Claude’da açın. Görselleri Claude ortamında analiz edin; izin ve plan koşulları Claude'a aittir.
+4. Artifact'tan Kartvizit JSON dosyasını alın, PWA'da dosyayı seçin veya JSON'u yapıştırın. Önizlemeyi kontrol edip arşive aktarın.
+5. Offline eklediğiniz kartları Claude’a taşımak için fotoğrafsız JSON indirin ve Artifact'a aktarın.
+
+Her iki yönde mevcut Kartvizit v1 yedek biçimi kullanılır, ancak fotoğraf ve ham OCR metni gönderilmez. Aynı kimlikli daha yeni kayıtlar güncellenir; eşit tarihli çakışmalar ve farklı kimlikli benzer kayıtlar atlanır. Silmeler aktarılmaz. İçe aktarma otomatik eşitleme değildir. PWA Claude hesap oturumuna erişmez; kullanıcı Claude içinde giriş yapar. Artifact'ın AI görsel girişi ve kişisel depolama özellikleri hedef hesap/cihazda doğrulanmalıdır. PWA'nın mevcut offline tarama ve tam yedekleme özellikleri değişmez.
+
 ## Veri ve yedekleme
 
 Tesseract.js, WASM motorunu bir Web Worker içinde çalıştırır. Görsel işleme ve kural tabanlı alan ayrıştırma cihazda yapılır. Kartvizitler Dexie üzerinden IndexedDB’ye yazılır. Fotoğraf saklama tercihi varsayılan olarak kapalıdır. Etkinleştirildiğinde yeni taramaların küçültülmüş JPEG kopyaları saklanır.
@@ -58,3 +68,4 @@ GitHub Pages kaynağı **GitHub Actions** olarak ayarlandığında `main` dalın
 ## Teknik bileşenler
 
 React, strict TypeScript, Vite, Tailwind CSS, Lucide, Tesseract.js, Dexie, Zod, write-excel-file ve Workbox. OCR sağlayıcısı ile ayrıştırıcı ayrı modüllerdir.
+
