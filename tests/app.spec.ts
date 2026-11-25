@@ -143,6 +143,15 @@ test('Claude aktarım seçimi, dosya, pano alanı, çakışma ve tekrar aktarım
   await expect(page.getByText('Deniz Örnek',{exact:true})).toBeVisible()
   await page.getByRole('button',{name:'Arşive aktar',exact:true}).click()
   await expect(page.getByText(/Eklenen: 1.*Mükerrer: 0/)).toBeVisible()
+  await page.getByLabel('Veya JSON yapıştır').fill(payload({
+    ...first, id:'a50e8400-e29b-41d4-a716-446655440000',
+    fullName:'  DENİZ   ORNEK ', company:'Başka şirket', emailAddresses:[],
+  }))
+  await page.getByRole('button',{name:'Aktarımı kontrol et'}).click()
+  await expect(page.getByRole('alert')).toContainText('Kartvizit çakışması')
+  await page.getByLabel('Karar',{exact:true}).selectOption('keep')
+  await page.getByRole('button',{name:'Arşive aktar',exact:true}).click()
+  await expect(page.getByText(/Atlanan: 1.*Çakışan: 1/)).toBeVisible()
   const newer={...first,jobTitle:'Yeni görev',updatedAt:'2026-01-02T00:00:00.000Z'}
   await page.getByLabel('Veya JSON yapıştır').fill(payload(newer))
   await page.getByRole('button',{name:'Aktarımı kontrol et'}).click()
@@ -213,4 +222,16 @@ test('bağımsız Artifact önizlemesinde geçici arşiv ve JSON dönüştürme'
   await page.getByLabel('JSON dosyası',{exact:true}).setInputFiles({name:'return.json',mimeType:'application/json',buffer:returnBytes})
   await page.getByRole('button',{name:'Arşive kaydet',exact:true}).click()
   await expect(page.getByText(/Eklenen 1/)).toBeVisible()
+})
+
+test('Claude taraması resmî oturumu ve yalnızca cihazda ayarlanan Yapıtı açar', async ({page}) => {
+  await home(page)
+  await nav(page, 'Tara').click()
+  await page.getByRole('button', {name: 'Claude ile Tara', exact: true}).click()
+  await expect(page.getByRole('link', {name:'Claude ile giriş yap', exact:true})).toHaveAttribute('href', 'https://claude.ai/login')
+  const field = page.getByLabel('Özel Claude Yapıtı bağlantısı')
+  await field.fill('https://claude.ai.example.test/code/artifact/12345678-1234-4123-8123-123456789abc')
+  await expect(page.getByRole('alert')).toContainText('Geçerli bir Claude Yapıtı bağlantısı girin')
+  await field.fill('https://claude.ai/chat/12345678-1234-4123-8123-123456789abc?artifact=87654321-1234-4123-8123-123456789abc&onboarding=1')
+  await expect(page.getByRole('link', {name:'Claude ile giriş yap ve tara'})).toHaveAttribute('href', 'https://claude.ai/code/artifact/87654321-1234-4123-8123-123456789abc')
 })

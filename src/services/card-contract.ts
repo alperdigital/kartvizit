@@ -45,13 +45,15 @@ function similar(a:string,b:string) {
   if (at<0) return true
   return small.slice(at+(small.length===big.length?1:0))===big.slice(at+1)
 }
+export const normalizedCardName = (card: Card) => fold(card.fullName.trim() || [card.firstName, card.lastName].join(' ')).trim().replace(/\s+/g, ' ')
 export function duplicates(c:Card, existing:Card[]) {
   const email = new Set(c.emailAddresses.map(e=>e.trim().toLowerCase()))
   const phones = new Set(c.phoneNumbers.map(p=>normalizePhone(p.number)).filter(p=>p.length>=7))
-  const name = (p:Card) => fold(p.fullName || [p.firstName,p.lastName].join(' ').trim())
+  const name = normalizedCardName(c)
   return existing.filter(p=>p.id!==c.id && (p.emailAddresses.some(e=>email.has(e.trim().toLowerCase())) ||
     p.phoneNumbers.some(n=>phones.has(normalizePhone(n.number))) ||
-    !!c.company && fold(p.company)===fold(c.company) && similar(name(p),name(c))))
+    Boolean(name && normalizedCardName(p) === name) ||
+    !!c.company && fold(p.company)===fold(c.company) && similar(normalizedCardName(p),name)))
 }
 const unique = <T>(values:T[]) => [...new Map(values.map(value=>[JSON.stringify(value),value])).values()]
 export function combine(old:Card, next:Card, merge:boolean):Card {
