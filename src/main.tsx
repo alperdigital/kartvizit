@@ -101,7 +101,7 @@ function App(){
       <main id="content">
         {hasUpdate&&<div className="notice">{t('Yeni sürüm hazır. Açık formları kaydettikten sonra güncelleyin.','An update is ready. Save open forms before updating.')} <button onClick={()=>void update.current?.(true)}>{t('Güncelle','Update')}</button></div>}
         {storageError&&<p className="notice" role="alert">{t('Yerel arşiv açılamadı. Tarayıcının depolama izinlerini kontrol edin.','The local archive could not open. Check browser storage permissions.')}</p>}
-        {page==='scan'&&<div hidden={!!editor}><div className="scan-status"><HardDrive/> {status} {ocrStatus!==true&&<button className="plain" onClick={()=>void prepare()}>{t('OCR kaynaklarını indir','Download OCR resources')}</button>}</div><Scanner t={t} settings={settings} onReview={openEditor} saved={saved} manual={()=>openEditor(newCard())}/></div>}
+        {page==='scan'&&<div hidden={!!editor}><div className="scan-status"><HardDrive/> {status} {ocrStatus!==true&&<button className="plain" onClick={()=>void prepare()}>{t('OCR kaynaklarını indir','Download OCR resources')}</button>}</div><div className="actions"><button onClick={()=>go('settings')}>{t('Claude ile tara / aktar','Scan / transfer with Claude')}</button></div><Scanner t={t} settings={settings} onReview={openEditor} saved={saved} manual={()=>openEditor(newCard())}/></div>}
         {editor?<Editor key={editor.card.id} initial={editor.card} t={t} close={()=>setEditor(undefined)} rescan={editor.scanId?()=>setEditor(undefined):undefined} onSaved={id=>{
           if(editor.scanId){setSaved(old=>[...old,editor.scanId!]);setEditor(undefined)}
           else {go('archive');showDetail(id)}
@@ -129,3 +129,4 @@ function App(){
   </div>
 }
 createRoot(document.getElementById('root')!).render(<App/>)
+
