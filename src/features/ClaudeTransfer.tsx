@@ -2,7 +2,7 @@ import {useEffect,useState} from 'react'
 import {Download, Upload, ExternalLink, Copy, Share2} from 'lucide-react'
 import {cards,labelOf, type Card} from '../services/cards'
 import {deliver} from '../services/export'
-import {claudeExport,inspectTransfer,importClaudeTransfer,planTransfer,transferLimit,transferState,type TransferChoice,type TransferDecision,type TransferInput,type TransferReport} from '../services/claude-transfer'
+import {claudeExport,compareContact,inspectTransfer,importClaudeTransfer,planTransfer,transferLimit,transferState,type TransferChoice,type TransferDecision,type TransferInput,type TransferReport} from '../services/claude-transfer'
 import type {Translate} from '../i18n'
 
 const defaultLink=import.meta.env.VITE_CLAUDE_ARTIFACT_URL as string|undefined
@@ -74,6 +74,7 @@ export function ClaudeTransfer({t,notify,online,setup=false}:{t:Translate;notify
     }catch{setError(t('Aktarım kaydedilemedi. Arşiv değiştiyse JSON’u tekrar inceleyin.','The transfer was not saved. If the archive changed, review the JSON again.'))}
     finally{setBusy(false)}
   }
+  const fieldNames={firstName:t('Ad','First name'),lastName:t('Soyad','Last name'),fullName:t('Tam ad','Full name'),company:t('Şirket','Company'),department:t('Departman','Department'),jobTitle:t('Unvan','Title'),phoneNumbers:t('Telefon','Phone'),emailAddresses:t('E-posta','Email'),websites:t('Web','Websites'),socialLinks:t('Sosyal bağlantılar','Social links'),addresses:t('Adres','Addresses'),notes:t('Not','Notes'),tags:t('Etiket','Tags'),isFavorite:t('Favori','Favorite'),needsReview:t('İnceleme gerekli','Needs review')}
   const choiceName=(choice:TransferChoice)=>({
     keep:t('Mevcut kaydı koru','Keep existing'),incoming:t('Gelen kaydı kullan','Use incoming'),
     merge:t('Birleştir','Merge'),separate:t('Ayrı kayıt oluştur','Create separate card'),skip:t('Atla','Skip')
@@ -108,7 +109,10 @@ export function ClaudeTransfer({t,notify,online,setup=false}:{t:Translate;notify
       {needsDecision&&<div className="notice screen-flow" key={needsDecision.incoming.id}><strong>{t('Çakışmayı inceleyin','Review conflict')}</strong>
         <p>{t('Gelen','Incoming')}: {labelOf(needsDecision.incoming)||needsDecision.incoming.id} · {needsDecision.incoming.company} · {needsDecision.incoming.updatedAt} · {needsDecision.incoming.emailAddresses.join(', ')} · {needsDecision.incoming.phoneNumbers.map(p=>p.number).join(', ')}</p>
         {needsDecision.existing.map(c=><div className="screen-flow" key={c.id}><p>{t('Mevcut','Existing')}: {labelOf(c)||c.id} · {c.company} · {c.updatedAt} · {c.emailAddresses.join(', ')} · {c.phoneNumbers.map(p=>p.number).join(', ')}</p>
-          <label>{t('Karar','Decision')}<select value="" disabled={busy} onChange={e=>{const choice=e.target.value as TransferChoice;if(choices.includes(choice))setDecisions(old=>new Map(old).set(needsDecision.incoming.id,{choice,targetId:c.id,targetState:transferState(c),separateId:crypto.randomUUID()}))}}>
+          <details><summary>{t('Değişen alanları göster','Show changed fields')}</summary>
+            <ul>{compareContact(c,needsDecision.incoming).map(change=><li key={change.field}><strong>{fieldNames[change.field]}:</strong> {change.existing||'—'} → {change.incoming||'—'}</li>)}</ul>
+          </details>
+          <label>{t('Karar','Decision')}<select aria-label={t('Karar','Decision')} value="" disabled={busy} onChange={e=>{const choice=e.target.value as TransferChoice;if(choices.includes(choice))setDecisions(old=>new Map(old).set(needsDecision.incoming.id,{choice,targetId:c.id,targetState:transferState(c),separateId:crypto.randomUUID()}))}}>
             <option value="">{t('Seçin','Choose')}</option>{choices.map(option=><option key={option} value={option}>{choiceName(option)}</option>)}
           </select></label>
         </div>)}

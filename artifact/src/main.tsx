@@ -2,14 +2,14 @@ import {useEffect,useRef,useState} from 'react'
 import {createRoot} from 'react-dom/client'
 import {cardSchema,labelOf,matches,newCard,type Card} from '../../src/services/card-contract'
 import {clipboardTable,csv,deliver} from '../../src/services/file-contract'
-import {claudeExport,inspectTransfer,planTransfer,transferState,transferLimit,type TransferChoice,type TransferDecision,type TransferInput} from '../../src/services/transfer-contract'
+import {claudeExport,compareContact,inspectTransfer,planTransfer,transferState,transferLimit,type TransferChoice,type TransferDecision,type TransferInput} from '../../src/services/transfer-contract'
 import {createArchive,extractionDrafts,extractionPrompt,type ClaudeImagePort,type PersonalPort} from './providers'
 import './artifact.css'
 
 type Ports={vision?:ClaudeImagePort;personal?:PersonalPort}
 type Side={file:File;rotation:number;margin:number}
 type PhotoCard={id:string;front:Side;back?:Side}
-type Draft={card:Card;uncertain:string[]}
+type Draft={card:Card;uncertain:string[];edit?:boolean}
 const fileTypes=['image/jpeg','image/png','image/webp']
 const accept=fileTypes.join(',')
 const valid=(f:File)=>fileTypes.includes(f.type)&&f.size>0&&f.size<=20*1024*1024
@@ -48,6 +48,7 @@ export function App({ports={}}:{ports?:Ports}){
   const [photos,setPhotos]=useState<PhotoCard[]>([])
   const [drafts,setDrafts]=useState<Draft[]>([])
   const [transfer,setTransfer]=useState<TransferInput>()
+  const [pendingEdit,setPendingEdit]=useState<Card>()
   const [decisions,setDecisions]=useState(new Map<string,TransferDecision>())
   const [pane,setPane]=useState<'scan'|'archive'|'transfer'>('scan')
   const [lang,setLang]=useState<'tr'|'en'>('tr')
@@ -71,7 +72,7 @@ export function App({ports={}}:{ports?:Ports}){
     if(!ready||working)return false
     setWorking(true);setError('')
     try{setCards(await archive.save(next));return true}
-    catch{setError(t('Arşiv kaydedilemedi. Önceki kayıtlar korunuyor.','Could not save the archive. Previous records are unchanged.'));return false}
+    catch{setError(t('Yazım doğrulanamadı. Tekrar denemeden önce arşivi kontrol edin.','The write could not be verified. Check the archive before retrying.'));return false}
     finally{setWorking(false)}
   }
   async function copy(value:string){
@@ -110,7 +111,7 @@ export function App({ports={}}:{ports?:Ports}){
     finally{abort.current=null;setProgress('');setWorking(false)}
   }
   function inspect(value:string){
-    setError('');setTransfer(undefined);setDecisions(new Map())
+    setError('');setTransfer(undefined);setPendingEdit(undefined);setDecisions(new Map())
     try{setTransfer(inspectTransfer(value))}catch{setError(t('Geçersiz Kartvizit v1 JSON.','Invalid Kartvizit v1 JSON.'))}
   }
   async function readTransfer(f?:File){
@@ -129,11 +130,13 @@ export function App({ports={}}:{ports?:Ports}){
     if(await update([...next.values()])){setMessage(description(plan.report));setTransfer(undefined);setJson('');setDecisions(new Map())}
   }
   const shown=cards.filter(c=>matches(c,query)&&(!tag||c.tags.includes(tag))&&(!favorites||c.isFavorite))
-  function queue(draft:Card){
+  function queue(draft:Card,edit=false){
     const result=cardSchema.safeParse(draft)
     if(!result.success){setError(t('Kartvizit alanlarını kontrol edin.','Check the business-card fields.'));return}
     if(!labelOf(draft)&&!draft.emailAddresses.length&&!draft.phoneNumbers.length){setError(t('En az ad, şirket, e-posta veya telefon girin.','Enter at least a name, company, email or phone.'));return}
-    setTransfer({cards:[result.data],invalid:0});setDecisions(new Map());setError('');setPane('transfer')
+    if(edit){setPendingEdit(result.data);setTransfer(undefined)}
+    else{setPendingEdit(undefined);setTransfer({cards:[result.data],invalid:0})}
+    setDecisions(new Map());setError('');setPane('transfer')
     setDrafts(old=>old.filter(d=>d.card.id!==draft.id))
   }
   async function download(value:string,filename:string,type:string){try{await deliver(new File([value],filename,{type}))}catch{setError(t('Dosya indirilemedi.','Download failed.'))}}
@@ -155,7 +158,7 @@ export function App({ports={}}:{ports?:Ports}){
       <button onClick={()=>void copy(extractionPrompt)}>{t('Sohbet için analiz talimatını kopyala','Copy analysis prompt for Claude chat')}</button><details><summary>{t('Analiz talimatını göster','Show analysis prompt')}</summary><p>{extractionPrompt}</p></details>
       <label>{t('Claude analiz JSON’u','Claude analysis JSON')}<textarea rows={4} value={modelText} onChange={e=>setModelText(e.target.value)}/></label><button disabled={!modelText.trim()} onClick={loadResult}>{t('Sonucu incele','Review result')}</button></>}
       <button onClick={()=>setDrafts(old=>[...old,{card:newCard(),uncertain:[]}])}>{t('Manuel taslak','Manual draft')}</button>
-      {drafts.map(d=><DraftForm key={d.card.id} draft={d} t={t} review={queue}/>)}
+      {drafts.map(d=><DraftForm key={d.card.id} draft={d} t={t} review={card=>queue(card,d.edit)}/>)}
     </section>}
     {pane==='archive'&&<section><h2>{t('Kişisel arşiv','Personal archive')}</h2>
       <label>{t('Kart ara','Search cards')}<input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></label>
@@ -164,7 +167,7 @@ export function App({ports={}}:{ports?:Ports}){
       {!shown.length&&<p>{t('Gösterilecek kart yok.','No cards to show.')}</p>}
       {shown.map(c=><article key={c.id}><strong>{name(c)}</strong><p>{[c.company,c.jobTitle,...c.emailAddresses].filter(Boolean).join(' · ')}</p>
         <div className="actions"><button disabled={working||!ready} aria-pressed={c.isFavorite} onClick={()=>void update(cards.map(old=>old.id===c.id?{...c,isFavorite:!c.isFavorite,updatedAt:new Date().toISOString()}:old))}>★ {t('Favori','Favorite')}</button>
-        <button onClick={()=>{setDrafts(old=>[...old.filter(d=>d.card.id!==c.id),{card:c,uncertain:[]}]);setPane('scan')}}>{t('Düzenle','Edit')}</button>
+        <button onClick={()=>{setDrafts(old=>[...old.filter(d=>d.card.id!==c.id),{card:c,uncertain:[],edit:true}]);setPane('scan')}}>{t('Düzenle','Edit')}</button>
         <button disabled={working||!ready} onClick={()=>{if(window.confirm(t('Kart silinsin mi?','Delete this card?')))void update(cards.filter(old=>old.id!==c.id))}}>{t('Sil','Delete')}</button></div></article>)}
       <div className="actions"><button onClick={()=>void download(csv(shown),'kartvizit.csv','text/csv')}>CSV</button><button onClick={()=>void copy(clipboardTable(shown))}>{t('Tabloyu kopyala','Copy table')}</button></div>
     </section>}
@@ -174,11 +177,16 @@ export function App({ports={}}:{ports?:Ports}){
       <label>{t('JSON dosyası','JSON file')}<input type="file" accept=".json,application/json" disabled={working} onChange={e=>{void readTransfer(e.target.files?.[0]);e.target.value=''}}/></label>
       <label>{t('JSON yapıştır','Paste JSON')}<textarea value={json} disabled={working} rows={4} onChange={e=>{setJson(e.target.value);setTransfer(undefined)}}/></label>
       <button disabled={working||!json.trim()} onClick={()=>inspect(json)}>{t('Aktarımı incele','Review transfer')}</button>
+      {pendingEdit&&<article><h3>{t('Yerel düzenlemeyi onaylayın','Confirm archive edit')}</h3><p>{name(pendingEdit)} · {pendingEdit.company}</p>
+        <div className="actions"><button disabled={!ready||working} onClick={()=>void update(cards.map(c=>c.id===pendingEdit.id?pendingEdit:c)).then(ok=>{if(ok){setPendingEdit(undefined);setPane('archive');setMessage(t('Kartvizit kaydedildi.','Card saved.'))}})}>{t('Düzenlemeyi kaydet','Save changes')}</button>
+        <button disabled={working} onClick={()=>setPendingEdit(undefined)}>{t('İptal','Cancel')}</button></div>
+      </article>}
       {plan&&<article><p role="status">{description(plan.report)}</p>{transfer?.cards.slice(0,10).map(c=><p key={c.id}>{name(c)}</p>)}
         {conflict&&<div key={conflict.incoming.id}><h3>{t('Çakışmayı inceleyin','Review conflict')}</h3>
           <p>{t('Gelen','Incoming')}: {name(conflict.incoming)} · {conflict.incoming.company} · {conflict.incoming.updatedAt}</p>
           {conflict.existing.map(c=><label key={c.id}>{t('Mevcut','Existing')}: {name(c)} · {c.company} · {c.updatedAt}
-          <select value="" onChange={e=>{const choice=e.target.value as TransferChoice;if(choice in choiceNames)setDecisions(old=>new Map(old).set(conflict.incoming.id,{choice,targetId:c.id,targetState:transferState(c),separateId:crypto.randomUUID()}))}}>
+          <span>{compareContact(c,conflict.incoming).map(change=>(change.existing||'—')+' → '+(change.incoming||'—')).join(' / ')}</span>
+          <select aria-label={t('Karar','Decision')} value="" onChange={e=>{const choice=e.target.value as TransferChoice;if(choice in choiceNames)setDecisions(old=>new Map(old).set(conflict.incoming.id,{choice,targetId:c.id,targetState:transferState(c),separateId:crypto.randomUUID()}))}}>
             <option value="">{t('Karar seçin','Choose decision')}</option>{Object.entries(choiceNames).map(([value,label])=><option key={value} value={value}>{label}</option>)}
           </select></label>)}</div>}
         <div className="actions"><button disabled={!ready||working||!!conflict||!transfer?.cards.length} onClick={()=>void commit()}>{t('Arşive kaydet','Save to archive')}</button><button disabled={working} onClick={()=>{setTransfer(undefined);setDecisions(new Map())}}>{t('İptal','Cancel')}</button></div>

@@ -9,7 +9,7 @@ export const extractionPrompt=`Read the attached business card images. If two im
 
 export function extractionDrafts(text:string){
   if(new Blob([text]).size>1024*1024)throw new Error('AI output exceeds limit')
-  return response.parse(JSON.parse(text.trim())).cards.map(({uncertain,...content})=>({
+  return response.parse(JSON.parse(text.trim().replace(/^\x60{3}(?:json)?[ \t]*\r?\n([\s\S]*?)\r?\n\x60{3}$/i,'$1'))).cards.map(({uncertain,...content})=>({
     card:portableCard({...newCard('scan'),...content,scanEngine:'claude',needsReview:true}),uncertain:uncertain??[]
   }))
 }
@@ -26,7 +26,11 @@ export function createArchive(port?:PersonalPort){
     async save(next:Card[]){
       const value=claudeExport(next)
       const validated=parseClaudeTransfer(value)
-      if(port)await port.writePrivate(value)
+      if(port){
+        await port.writePrivate(value)
+        const check=await port.readPrivate()
+        if(check===null || claudeExport(parseClaudeTransfer(check))!==value)throw new Error('Personal write could not be verified')
+      }
       data=validated
       return data.map(portableCard)
     },

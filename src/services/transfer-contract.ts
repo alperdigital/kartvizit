@@ -118,3 +118,12 @@ export function planTransfer(input:TransferInput,archive:Card[],decisions?:Reado
   return {changes,conflicts,report}
 }
 
+
+export const comparisonFields=['firstName','lastName','fullName','company','department','jobTitle','phoneNumbers','emailAddresses','websites','socialLinks','addresses','notes','tags','isFavorite','needsReview'] as const
+export function compareContact(current:Card,incoming:Card){
+  return comparisonFields.flatMap(field=>{
+    const left=current[field],right=incoming[field]
+    const render=(v:typeof left)=>Array.isArray(v)?v.map(x=>typeof x==='string'?x:Object.values(x).filter(Boolean).join(' · ')).join('; '):String(v)
+    return JSON.stringify(left)!==JSON.stringify(right)?[{field,existing:render(left),incoming:render(right)}]:[]
+  })
+}
