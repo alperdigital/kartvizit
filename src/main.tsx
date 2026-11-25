@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { liveQuery } from 'dexie'
 import { registerSW } from 'virtual:pwa-register'
-import { Archive as ArchiveIcon, Check, ContactRound, Copy, Download, HardDrive, Plus, ScanLine, Sparkles, Settings as SettingsIcon, ShieldCheck, Star, Wifi, WifiOff, X } from 'lucide-react'
+import { Archive as ArchiveIcon, Check, ContactRound, Copy, Download, HardDrive, Plus, ScanLine, ArrowLeftRight, Settings as SettingsIcon, ShieldCheck, Star, Wifi, WifiOff, X } from 'lucide-react'
 import { Archive } from './features/Archive'
 import { ClaudeTransfer } from './features/ClaudeTransfer'
 import { claudeExport } from './services/claude-transfer'
@@ -107,8 +107,8 @@ function App(){
         {page==='scan'&&<div hidden={!!editor} className="screen-flow">
           <div className="page-heading"><div><p className="eyebrow"><span/>{t('YENİ KARTVİZİT','NEW BUSINESS CARD')}</p><h1>{t('Nasıl eklemek istersiniz?','How would you like to add a card?')}</h1></div></div>
           <div className="scan-methods">
-            <button className={method==='claude'?'primary':''} aria-pressed={method==='claude'} onClick={()=>setMethod('claude')}><Sparkles/><span><strong>{t('Claude ile Tara','Scan with Claude')}</strong><small>{t('İnternet ve Claude hesabı gerekir.','Internet and a Claude account required.')}</small></span></button>
             <button className={method==='device'?'primary':''} aria-pressed={method==='device'} onClick={()=>setMethod('device')}><ScanLine/><span><strong>{t('Cihazda Tara','Scan on device')}</strong><small>{t('OCR kaynakları indirildikten sonra çevrimdışı çalışır.','Works offline after OCR resources are downloaded.')}</small></span></button>
+            <button className={method==='claude'?'primary':''} aria-pressed={method==='claude'} onClick={()=>setMethod('claude')}><ArrowLeftRight/><span><strong>{t('JSON aktarımı','JSON transfer')}</strong><small>{t('Kartvizitleri dosyadan veya panodan alıp verin.','Import and export cards by file or clipboard.')}</small></span></button>
             <button onClick={()=>openEditor(newCard())}><Plus/><span><strong>{t('Manuel ekle','Add manually')}</strong><small>{t('Alanları kendiniz doldurun.','Fill in the fields yourself.')}</small></span></button>
           </div>
           {method==='claude'&&<ClaudeTransfer t={t} notify={setToast} online={online}/>}
@@ -130,8 +130,8 @@ function App(){
       {dialog.kind==='export'?<><p>{dialog.items.length} {t('kartvizit','cards')}</p><div className="actions">
         {(['xlsx','csv','vcf','json'] as const).map((format,i)=><button disabled={busy} key={format} onClick={()=>exportItems(dialog.items,format,shareExport)}><Download/>{['Excel','CSV','vCard','JSON'][i]}</button>)}
         <button disabled={busy} onClick={()=>void operation(async()=>{await navigator.clipboard.writeText(clipboardTable(dialog.items));setToast(t('Tablo panoya kopyalandı.','Table copied.'))},false)}><Copy/>{t('Tabloyu kopyala','Copy table')}</button>
-        <button disabled={busy} onClick={()=>void operation(async()=>deliver(new File([claudeExport(dialog.items)],'kartvizit-claude.json',{type:'application/json'}),shareExport),false)}><Download/>{t('Claude JSON indir','Download Claude JSON')}</button>
-        <button disabled={busy} onClick={()=>void operation(async()=>{await navigator.clipboard.writeText(claudeExport(dialog.items));setToast(t('Fotoğrafsız JSON kopyalandı.','Photo-free JSON copied.'))},false)}><Copy/>{t('Claude JSON kopyala','Copy Claude JSON')}</button>
+        <button disabled={busy} onClick={()=>void operation(async()=>deliver(new File([claudeExport(dialog.items)],'kartvizit-claude.json',{type:'application/json'}),shareExport),false)}><Download/>{t('Fotoğrafsız JSON indir','Download photo-free JSON')}</button>
+        <button disabled={busy} onClick={()=>void operation(async()=>{await navigator.clipboard.writeText(claudeExport(dialog.items));setToast(t('Fotoğrafsız JSON kopyalandı.','Photo-free JSON copied.'))},false)}><Copy/>{t('Fotoğrafsız JSON kopyala','Copy photo-free JSON')}</button>
       </div>{typeof navigator.canShare==='function'&&<label className="check"><input type="checkbox" checked={shareExport} onChange={e=>setShareExport(e.target.checked)}/>{t('Dosyayı paylaş','Share the file')}</label>}</>:dialog.kind==='delete'?<><p>{t(`${dialog.items.length} kartvizit cihazdan silinecek. Bu işlem geri alınamaz.`,`${dialog.items.length} cards will be removed from this device. This cannot be undone.`)}</p><div className="actions"><button onClick={()=>setDialog(undefined)} disabled={busy}>{t('İptal','Cancel')}</button><button className="danger" disabled={busy} onClick={()=>void operation(async()=>{if(dialog.all)await cards.clear();else await cards.bulkDelete(dialog.items.map(c=>c.id));setDetail(undefined);setToast(t('Kayıtlar silindi.','Cards deleted.'))})}>{dialog.all?t('Tümünü kalıcı sil','Permanently delete all'):t('Kalıcı sil','Permanently delete')}</button></div></>:<form className="screen-flow" onSubmit={e=>{e.preventDefault();void operation(async()=>{
         const added=tags.split(',').map(s=>s.trim()).filter(Boolean)
         await cards.db.transaction('rw',cards,async()=>{

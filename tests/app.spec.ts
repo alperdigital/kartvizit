@@ -79,7 +79,7 @@ test('gerçek Türkçe ve İngilizce OCR, çevrimdışı kabuk ve dosya çıktı
   await page.reload()
   await expect(page.getByText('Çevrimdışı',{exact:true})).toBeVisible()
   await nav(page,'Tara').click()
-  await page.getByRole('button',{name:/^Claude ile Tara/}).click()
+  await page.getByRole('button',{name:/^JSON aktarımı/}).click()
   await expect(page.getByText(/İnternet bağlantısı yok/)).toBeVisible()
   await page.getByRole('button',{name:/^Cihazda Tara/}).click()
   await page.getByLabel('Kartvizit görselleri').setInputFiles([
@@ -133,19 +133,20 @@ test('mükerrer kayıtta açık onayla birleştirme',async({page})=>{
 test('Claude aktarım seçimi, dosya, pano alanı, çakışma ve tekrar aktarım',async({page},testInfo)=>{
   await home(page)
   await nav(page,'Tara').click()
-  await page.getByRole('button',{name:/^Claude ile Tara/}).click()
-  await expect(page.getByText(/Artifact bağlantısı henüz yapılandırılmadı/)).toBeVisible()
+  await page.getByRole('button',{name:/^JSON aktarımı/}).click()
+  await expect(page.getByRole('heading',{name:'JSON aktarımı',exact:true})).toBeVisible()
   if(process.env.KARTVIZIT_SCREENSHOTS)await page.screenshot({path:testInfo.outputPath('pwa-claude.png'),fullPage:true})
   const first={id:'550e8400-e29b-41d4-a716-446655440000',firstName:'Deniz',lastName:'Örnek',fullName:'Deniz Örnek',company:'Örnek Teknoloji',department:'',jobTitle:'',
     phoneNumbers:[],emailAddresses:['deniz@example.test'],websites:[],socialLinks:[],addresses:[],notes:'',tags:[],isFavorite:false,rawOcrText:'private',ocrConfidence:92,fieldConfidence:{},needsReview:true,createdAt:'2026-01-01T00:00:00.000Z',updatedAt:'2026-01-01T00:00:00.000Z',sourceType:'scan'}
   const payload=(item:typeof first)=>JSON.stringify({format:'kartvizit',version:1,cards:[item]})
-  await page.getByLabel('Claude JSON dosyası').setInputFiles({name:'card.json',mimeType:'application/json',buffer:Buffer.from(payload(first))})
+  await page.getByLabel('Kartvizit JSON dosyası').setInputFiles({name:'card.json',mimeType:'application/json',buffer:Buffer.from(payload(first))})
   await expect(page.getByText('Deniz Örnek',{exact:true})).toBeVisible()
   await page.getByRole('button',{name:'Arşive aktar',exact:true}).click()
   await expect(page.getByText(/Eklenen: 1.*Mükerrer: 0/)).toBeVisible()
   const newer={...first,jobTitle:'Yeni görev',updatedAt:'2026-01-02T00:00:00.000Z'}
   await page.getByLabel('Veya JSON yapıştır').fill(payload(newer))
   await page.getByRole('button',{name:'Aktarımı kontrol et'}).click()
+  await expect(page.getByRole('alert')).toContainText('Kartvizit çakışması')
   await expect(page.getByRole('button',{name:'Arşive aktar',exact:true})).toBeDisabled()
   await page.getByLabel('Karar',{exact:true}).selectOption('incoming')
   await page.getByRole('button',{name:'Arşive aktar',exact:true}).click()
@@ -165,11 +166,11 @@ test('Claude aktarım seçimi, dosya, pano alanı, çakışma ve tekrar aktarım
   await expect(page.locator('html')).toHaveAttribute('data-theme','dark')
   await expect(page.locator('html')).toHaveAttribute('lang','en')
   await nav(page,'Scan').click()
-  const choose=page.getByRole('button',{name:/^Scan with Claude/})
+  const choose=page.getByRole('button',{name:/^JSON transfer/})
   await choose.focus()
   await expect(choose).toBeFocused()
   await choose.press('Enter')
-  await expect(page.getByText(/Artifact link is not configured yet/)).toBeVisible()
+  await expect(page.getByRole('heading',{name:'JSON transfer',exact:true})).toBeVisible()
 })
 
 test('bağımsız Artifact önizlemesinde geçici arşiv ve JSON dönüştürme',async({page},testInfo)=>{
@@ -199,9 +200,9 @@ test('bağımsız Artifact önizlemesinde geçici arşiv ve JSON dönüştürme'
   // The identical bytes are imported in the PWA, then a PWA export is opened here.
   await home(page)
   await nav(page,'Tara').click()
-  await page.getByRole('button',{name:/^Claude ile Tara/}).click()
+  await page.getByRole('button',{name:/^JSON aktarımı/}).click()
   const transferJson=JSON.stringify({format:'kartvizit',version:1,cards})
-  await page.getByLabel('Claude JSON dosyası').setInputFiles({name:'artifact.json',mimeType:'application/json',buffer:Buffer.from(transferJson)})
+  await page.getByLabel('Kartvizit JSON dosyası').setInputFiles({name:'artifact.json',mimeType:'application/json',buffer:Buffer.from(transferJson)})
   await page.getByRole('button',{name:'Arşive aktar',exact:true}).click()
   await expect(page.getByText(/Eklenen: 1/)).toBeVisible()
   const returnFile=page.waitForEvent('download')

@@ -5,14 +5,13 @@ import {deliver} from '../services/export'
 import {claudeExport,compareContact,inspectTransfer,importClaudeTransfer,planTransfer,transferLimit,transferState,type TransferChoice,type TransferDecision,type TransferInput,type TransferReport} from '../services/claude-transfer'
 import type {Translate} from '../i18n'
 
-const defaultLink=import.meta.env.VITE_CLAUDE_ARTIFACT_URL as string|undefined
 const linkKey='kartvizit-claude-artifact'
 const obsoleteExample='https://claude.ai/artifact/5aZ3uLS5ZtFxYkCj8Cqnzi'
 function loadLink(){
   try{
     const override=localStorage.getItem(linkKey)
-    return override && override!==obsoleteExample ? override : defaultLink||''
-  }catch{return defaultLink||''}
+    return override && override!==obsoleteExample ? override : ''
+  }catch{return ''}
 }
 export function artifactUrl(value:string){
   try{
@@ -83,9 +82,9 @@ export function ClaudeTransfer({t,notify,online,setup=false}:{t:Translate;notify
     return t(`Toplam: ${r.total} · Eklenen: ${r.added} · Güncellenen: ${r.updated} · Atlanan: ${r.skipped} · Mükerrer: ${r.duplicates} · Çakışan: ${r.conflicts} · Geçersiz: ${r.invalid}`,
       `Total: ${r.total} · Added: ${r.added} · Updated: ${r.updated} · Skipped: ${r.skipped} · Duplicates: ${r.duplicates} · Conflicts: ${r.conflicts} · Invalid: ${r.invalid}`)
   }
-  return <section className="panel screen-flow claude-transfer" aria-label={t('Claude aktarımı','Claude transfer')}>
-    <h2>{t('Claude ile kartvizit okuma','Scan with Claude')}</h2>
-    <p>{t('Claude için internet ve Claude hesabı gerekir. Giriş Claude’da yapılır. Arşivler otomatik eşitlenmez.','Claude requires internet and a Claude account. Sign-in happens in Claude. Archives never sync automatically.')}</p>
+  return <section className="panel screen-flow claude-transfer" aria-label={t('JSON aktarımı','JSON transfer')}>
+    <h2>{t('JSON aktarımı','JSON transfer')}</h2>
+    <p>{t('Kartvizit JSON v1 dosyalarını içe ve dışa aktarın. Aktarım cihazda yapılır.','Import and export Kartvizit JSON v1 files on your device.')}</p>
     {setup&&<details><summary>{t('Özel Artifact bağlantısı (isteğe bağlı)','Private Artifact link (optional)')}</summary>
       <label>{t('Claude Artifact bağlantısı','Claude Artifact link')}<input type="url" value={link} onChange={e=>{
         setLink(e.target.value)
@@ -93,20 +92,20 @@ export function ClaudeTransfer({t,notify,online,setup=false}:{t:Translate;notify
       }}/></label>
       {link&&!url&&<p role="alert">{t('Geçerli bir Claude Artifact bağlantısı girin.','Enter a valid Claude Artifact link.')}</p>}
     </details>}
-    {!ready?<p role="status">{t('İnternet bağlantısı yok. Cihazda Tara veya manuel JSON aktarımını kullanabilirsiniz.','No internet connection. Use on-device scanning or manual JSON transfer.')}</p>
+    {!ready?<p role="status">{t('İnternet bağlantısı yok. JSON aktarımını kullanabilirsiniz.','No internet connection. JSON transfer is still available.')}</p>
       :url?<a className="button primary" href={url} target="_blank" rel="noopener noreferrer"><ExternalLink/>{t('Claude’da aç','Open in Claude')}</a>
-      :<p role="status">{t('Artifact bağlantısı henüz yapılandırılmadı. JSON aktarımı kullanılabilir.','The Artifact link is not configured yet. JSON transfer is available.')}</p>}
-    <h3>{t('Claude’a aktar','Transfer to Claude')}</h3>
+      :null}
+    <h3>{t('JSON dışa aktar','Export JSON')}</h3>
     <p>{t('Tüm kartların ayrıştırılmış bilgileri aktarılır; fotoğraf ve ham OCR metni dahil edilmez. Seçili kartlar için arşivin Dışa aktar menüsünü kullanın.','Transfer structured data for all cards without photos or raw OCR. For selected cards, use the archive Export menu.')}</p>
     <div className="actions"><button disabled={busy} onClick={()=>void send('download')}><Download/>{t('JSON indir','Download JSON')}</button><button disabled={busy} onClick={()=>void send('copy')}><Copy/>{t('JSON kopyala','Copy JSON')}</button>
       {typeof navigator.canShare==='function'&&<button disabled={busy} onClick={()=>void send('share')}><Share2/>{t('JSON paylaş','Share JSON')}</button>}</div>
-    <h3>{t('Claude’dan aktar','Import from Claude')}</h3>
-    <label className="button file-button"><Upload/>{t('JSON dosyası seç','Choose JSON file')}<input disabled={busy} type="file" accept=".json,application/json" aria-label={t('Claude JSON dosyası','Claude JSON file')} onChange={e=>{void read(e.target.files?.[0]);e.target.value=''}}/></label>
+    <h3>{t('JSON içe aktar','Import JSON')}</h3>
+    <label className="button file-button"><Upload/>{t('JSON dosyası seç','Choose JSON file')}<input disabled={busy} type="file" accept=".json,application/json" aria-label={t('Kartvizit JSON dosyası','Kartvizit JSON file')} onChange={e=>{void read(e.target.files?.[0]);e.target.value=''}}/></label>
     <label>{t('Veya JSON yapıştır','Or paste JSON')}<textarea disabled={busy} rows={4} value={text} onChange={e=>{setText(e.target.value);reset()}}/></label>
     <button disabled={busy||!text.trim()} onClick={()=>void inspect(text)}>{t('Aktarımı kontrol et','Validate transfer')}</button>
     {preview&&plan&&<div className="screen-flow"><p role="status">{t('Önizleme: ','Preview: ')}{summary(plan.report)}. {t('Silmeler aktarılmaz.','Deletions are not transferred.')}</p>
       <ul>{preview.input.cards.slice(0,10).map(c=><li key={c.id}>{labelOf(c)||c.emailAddresses[0]||c.id}</li>)}</ul>
-      {needsDecision&&<div className="notice screen-flow" key={needsDecision.incoming.id}><strong>{t('Çakışmayı inceleyin','Review conflict')}</strong>
+      {needsDecision&&<div className="notice screen-flow" key={needsDecision.incoming.id}><p role="alert"><strong>{t('Kartvizit çakışması','Card conflict')}</strong> {t('Aktarmadan önce mevcut ve gelen kaydı karşılaştırıp bir karar seçin.','Compare the existing and incoming cards and choose how to resolve the conflict before importing.')}</p>
         <p>{t('Gelen','Incoming')}: {labelOf(needsDecision.incoming)||needsDecision.incoming.id} · {needsDecision.incoming.company} · {needsDecision.incoming.updatedAt} · {needsDecision.incoming.emailAddresses.join(', ')} · {needsDecision.incoming.phoneNumbers.map(p=>p.number).join(', ')}</p>
         {needsDecision.existing.map(c=><div className="screen-flow" key={c.id}><p>{t('Mevcut','Existing')}: {labelOf(c)||c.id} · {c.company} · {c.updatedAt} · {c.emailAddresses.join(', ')} · {c.phoneNumbers.map(p=>p.number).join(', ')}</p>
           <details><summary>{t('Değişen alanları göster','Show changed fields')}</summary>

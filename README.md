@@ -21,9 +21,9 @@ Kartvizit, fiziksel kartvizitleri Türkçe ve İngilizce OCR ile okuyup yerel bi
 
 ## Claude ile sunucusuz kullanım
 
-**Tara → Claude ile Tara** bölümünde, doğrulanmış ve yapılandırılmış bir Artifact bağlantısı varsa Claude’u açabilirsiniz. İnternet ve Claude hesabı gerekir; PWA hesap oturumunu görmez ve örnek bağlantı kullanmaz. Artifact bağlantısı yoksa da Kartvizit v1 JSON aktarımı, yerel OCR ve manuel arşiv çalışır.
+**Tara → JSON aktarımı** bölümünden Kartvizit v1 dosyası seçebilir, JSON yapıştırabilir, kartları dosyaya indirebilir veya panoya kopyalayabilirsiniz. Bu işlemler cihazda çalışır. Özel Yapıt bağlantısı yalnızca kullanıcının cihazında ayarlanabilir.
 
-Aktarım önizleme ve açık kullanıcı onayı gerektirir. Fotoğraflar ve ham OCR aktarımda çıkarılır; tam yerel yedek davranışı değişmez. Otomatik eşitleme veya silme yayılımı yoktur. Claude içi AI ve kişisel depolama, gerçek hesapta doğrulanana kadar üretim özelliği olarak sunulmaz.
+Aktarım önizleme ve açık kullanıcı onayı gerektirir. Fotoğraflar ve ham OCR aktarımda çıkarılır; tam yerel yedek davranışı değişmez. Otomatik eşitleme veya silme yayılımı yoktur. Çakışma algılandığında kayıtlar karşılaştırılır ve seçiminiz beklenir.
 
 [Mimari](docs/ARCHITECTURE.md) · [Claude entegrasyonu](docs/CLAUDE-INTEGRATION.md) · [Artifact yayınlama](docs/ARTIFACT-DEPLOYMENT.md) · [Test](docs/TESTING.md) · [Gizlilik](docs/PRIVACY.md) · [Kullanım](docs/USER-GUIDE.md)
 
