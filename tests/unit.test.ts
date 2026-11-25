@@ -2,6 +2,7 @@ import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
 import { cards, combine, duplicates, fold, matches, newCard, normalizePhone, safeUrl } from '../src/services/cards'
 import { backup, csv, formulaSafe, makeFile, readBackup, restore, vcard } from '../src/services/export'
+import { claudeExport, parseClaudeTransfer, importClaudeTransfer } from '../src/services/claude-transfer'
 import { BusinessCardParser } from '../src/services/parser'
 
 const parse=(text:string)=>new BusinessCardParser().parse({text,confidence:96,lines:[]})
@@ -83,5 +84,30 @@ describe('Dosyalar ve kalıcılık',()=>{
   it('zararlı protokolleri ve kimlik içeren URL’leri reddeder',()=>{
     for(const value of ['javascript:alert(1)','data:text/html,n','file:///etc/passwd','https://a@b.example','//example.com']) expect(safeUrl(value)).toBeUndefined()
     expect(safeUrl('example.com')).toBe('https://example.com/')
+  })
+})
+
+
+describe('Claude Artifact aktarımı',()=>{
+  it('fotoğrafları ve ham OCR verisini çıkarır, kimliği korur',()=>{
+    const card={...newCard('scan'),fullName:'Örnek Kişi',rawOcrText:'private OCR',ocrConfidence:92,photos:['data:image/jpeg;base64,YQ==']}
+    const result=parseClaudeTransfer(claudeExport([card]))[0]
+    expect(result).toMatchObject({id:card.id,fullName:card.fullName,rawOcrText:'',ocrConfidence:null,fieldConfidence:{}})
+    expect(result.photos).toBeUndefined()
+    expect(()=>parseClaudeTransfer('{"format":"kartvizit","version":1,"cards":[{}]}')).toThrow()
+    expect(()=>parseClaudeTransfer(claudeExport([card,card]))).toThrow()
+  })
+  it('yalnızca yeni kayıtları ve yeni sürümleri alır, benzer kartları korur',async()=>{
+    const original={...newCard(),fullName:'Örnek Kişi',emailAddresses:['claude-transfer@example.test'],rawOcrText:'local',createdAt:'2026-01-01T00:00:00.000Z',updatedAt:'2026-01-01T00:00:00.000Z'}
+    try{
+      expect(await importClaudeTransfer([original])).toMatchObject({added:1})
+      await cards.update(original.id,{rawOcrText:'local OCR'})
+      const newer={...original,company:'Yeni şirket',updatedAt:'2026-01-02T00:00:00.000Z'}
+      expect(await importClaudeTransfer([newer])).toMatchObject({updated:1})
+      expect(await cards.get(original.id)).toMatchObject({company:'Yeni şirket',rawOcrText:'local OCR'})
+      expect(await importClaudeTransfer([newer])).toMatchObject({skipped:1})
+      expect(await importClaudeTransfer([{...newer,company:'Çakışan'}])).toMatchObject({conflicts:1})
+      expect(await importClaudeTransfer([{...newer,id:crypto.randomUUID()}])).toMatchObject({conflicts:1})
+    }finally{await cards.delete(original.id)}
   })
 })
