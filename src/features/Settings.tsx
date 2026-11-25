@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Database, Download, ShieldCheck, Smartphone, SlidersHorizontal, Trash2, Upload } from 'lucide-react'
 import type { Settings as SettingsData,Translate } from '../i18n'
 import { restore } from '../services/export'
+import { ClaudeTransfer } from './ClaudeTransfer'
 
 export function Settings({t,value,change,prepare,ocrStatus,onExport,onDelete,notify}:{t:Translate;value:SettingsData;change:(value:SettingsData)=>void;prepare:()=>void;ocrStatus:string;onExport:()=>void;onDelete:()=>void;notify:(message:string)=>void}) {
   const [importing,setImporting]=useState(false)
@@ -24,6 +25,7 @@ export function Settings({t,value,change,prepare,ocrStatus,onExport,onDelete,not
       </div>
       <div className="section-heading"><div><h3>{t('Çevrimdışı tarama','Offline scanning')}</h3><p role="status">{ocrStatus}</p></div><button onClick={prepare}><Download/>{t('OCR kaynaklarını indir','Download OCR resources')}</button></div>
     </div>
+    <ClaudeTransfer t={t} notify={notify}/>
     <div className="panel screen-flow">
       <h2><Database/>{t('Veri ve yedekleme','Data and backup')}</h2>
       <p>{t('JSON yedeğini cihaz dışında saklayarak arşivinizi koruyabilirsiniz. İçe aktarma mevcut kayıtları korur.','Keep a JSON backup outside this device to protect your archive. Importing preserves existing records.')}</p>
@@ -42,3 +44,4 @@ export function Settings({t,value,change,prepare,ocrStatus,onExport,onDelete,not
     </div>
   </section>
 }
+
