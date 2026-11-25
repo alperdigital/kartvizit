@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Database, Download, ShieldCheck, Smartphone, SlidersHorizontal, Trash2, Upload } from 'lucide-react'
 import type { Settings as SettingsData,Translate } from '../i18n'
 import { restore } from '../services/export'
+import { ClaudeTransfer } from './ClaudeTransfer'
 
 export function Settings({t,value,change,prepare,ocrStatus,onExport,onDelete,notify}:{t:Translate;value:SettingsData;change:(value:SettingsData)=>void;prepare:()=>void;ocrStatus:string;onExport:()=>void;onDelete:()=>void;notify:(message:string)=>void}) {
   const [importing,setImporting]=useState(false)
@@ -17,13 +18,14 @@ export function Settings({t,value,change,prepare,ocrStatus,onExport,onDelete,not
     <div className="panel screen-flow">
       <h2><SlidersHorizontal/>{t('Uygulama tercihleri','Preferences')}</h2>
       <div className="form-grid">
-        <label>{t('Tema','Theme')}<select value={value.theme} onChange={e=>change({...value,theme:e.target.value as SettingsData['theme']})}><option value="system">{t('Sistem','System')}</option><option value="light">{t('Açık','Light')}</option><option value="dark">{t('Koyu','Dark')}</option></select></label>
-        <label>{t('Arayüz dili','Interface language')}<select value={value.language} onChange={e=>change({...value,language:e.target.value as SettingsData['language']})}><option value="tr">Türkçe</option><option value="en">English</option></select></label>
-        <label>{t('Varsayılan OCR dili','Default OCR language')}<select value={value.ocr} onChange={e=>change({...value,ocr:e.target.value as SettingsData['ocr']})}><option value="tur+eng">Türkçe + English</option><option value="tur">Türkçe</option><option value="eng">English</option></select></label>
+        <label>{t('Tema','Theme')}<select aria-label={t('Tema','Theme')} value={value.theme} onChange={e=>change({...value,theme:e.target.value as SettingsData['theme']})}><option value="system">{t('Sistem','System')}</option><option value="light">{t('Açık','Light')}</option><option value="dark">{t('Koyu','Dark')}</option></select></label>
+        <label>{t('Arayüz dili','Interface language')}<select aria-label={t('Arayüz dili','Interface language')} value={value.language} onChange={e=>change({...value,language:e.target.value as SettingsData['language']})}><option value="tr">Türkçe</option><option value="en">English</option></select></label>
+        <label>{t('Varsayılan OCR dili','Default OCR language')}<select aria-label={t('Varsayılan OCR dili','Default OCR language')} value={value.ocr} onChange={e=>change({...value,ocr:e.target.value as SettingsData['ocr']})}><option value="tur+eng">Türkçe + English</option><option value="tur">Türkçe</option><option value="eng">English</option></select></label>
         <label className="check"><input type="checkbox" checked={value.photos} onChange={e=>change({...value,photos:e.target.checked})}/>{t('Yeni taramaların fotoğrafını sakla','Keep photos of new scans')}</label>
       </div>
       <div className="section-heading"><div><h3>{t('Çevrimdışı tarama','Offline scanning')}</h3><p role="status">{ocrStatus}</p></div><button onClick={prepare}><Download/>{t('OCR kaynaklarını indir','Download OCR resources')}</button></div>
     </div>
+    <ClaudeTransfer t={t} notify={notify} setup/>
     <div className="panel screen-flow">
       <h2><Database/>{t('Veri ve yedekleme','Data and backup')}</h2>
       <p>{t('JSON yedeğini cihaz dışında saklayarak arşivinizi koruyabilirsiniz. İçe aktarma mevcut kayıtları korur.','Keep a JSON backup outside this device to protect your archive. Importing preserves existing records.')}</p>
@@ -42,3 +44,4 @@ export function Settings({t,value,change,prepare,ocrStatus,onExport,onDelete,not
     </div>
   </section>
 }
+

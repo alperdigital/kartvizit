@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "typecheck": "tsc",
     "test": "vitest run tests/unit.test.ts",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "build:artifact": "vite build --config vite.artifact.config.ts && node scripts/pack-artifact.mjs"
   },
   "repository": {
     "type": "git",

@@ -2,6 +2,8 @@ import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
 import { cards, combine, duplicates, fold, matches, newCard, normalizePhone, safeUrl } from '../src/services/cards'
 import { backup, csv, formulaSafe, makeFile, readBackup, restore, vcard } from '../src/services/export'
+import { claudeExport, parseClaudeTransfer, importClaudeTransfer, inspectTransfer, transferState } from '../src/services/claude-transfer'
+import { createArchive, extractionDrafts } from '../artifact/src/providers'
 import { BusinessCardParser } from '../src/services/parser'
 
 const parse=(text:string)=>new BusinessCardParser().parse({text,confidence:96,lines:[]})
@@ -83,5 +85,67 @@ describe('Dosyalar ve kalıcılık',()=>{
   it('zararlı protokolleri ve kimlik içeren URL’leri reddeder',()=>{
     for(const value of ['javascript:alert(1)','data:text/html,n','file:///etc/passwd','https://a@b.example','//example.com']) expect(safeUrl(value)).toBeUndefined()
     expect(safeUrl('example.com')).toBe('https://example.com/')
+  })
+})
+
+
+describe('Claude Artifact aktarımı',()=>{
+  it('fotoğrafları ve ham OCR verisini çıkarır, kimliği korur',()=>{
+    const card={...newCard('scan'),fullName:'Örnek Kişi',rawOcrText:'private OCR',ocrConfidence:92,photos:['data:image/jpeg;base64,YQ==']}
+    const result=parseClaudeTransfer(claudeExport([card]))[0]
+    expect(result).toMatchObject({id:card.id,fullName:card.fullName,rawOcrText:'',ocrConfidence:null,fieldConfidence:{}})
+    expect(result.photos).toBeUndefined()
+    expect(()=>parseClaudeTransfer('{"format":"kartvizit","version":1,"cards":[{}]}')).toThrow()
+    expect(()=>parseClaudeTransfer(claudeExport([card,card]))).toThrow()
+  })
+  it('yalnızca yeni kayıtları ve yeni sürümleri alır, benzer kartları korur',async()=>{
+    const original={...newCard(),fullName:'Örnek Kişi',emailAddresses:['claude-transfer@example.test'],rawOcrText:'local',createdAt:'2026-01-01T00:00:00.000Z',updatedAt:'2026-01-01T00:00:00.000Z'}
+    try{
+      expect(await importClaudeTransfer([original])).toMatchObject({added:1})
+      await cards.update(original.id,{rawOcrText:'local OCR'})
+      const newer={...original,company:'Yeni şirket',updatedAt:'2026-01-02T00:00:00.000Z'}
+      expect(await importClaudeTransfer([newer])).toMatchObject({updated:1})
+      expect(await cards.get(original.id)).toMatchObject({company:'Yeni şirket',rawOcrText:'local OCR'})
+      expect(await importClaudeTransfer([newer])).toMatchObject({skipped:1})
+      expect(await importClaudeTransfer([{...newer,company:'Çakışan'}])).toMatchObject({conflicts:1})
+      expect(await importClaudeTransfer([{...newer,id:crypto.randomUUID()}])).toMatchObject({conflicts:1})
+    }finally{await cards.delete(original.id)}
+  })
+})
+
+describe('İncelenen aktarım ve Artifact sözleşmesi',()=>{
+  it('geçersiz satırları sayar ve beklenmeyen özel alanları atar',()=>{
+    const valid={...newCard(),fullName:'Örnek Işık',photos:['invalid local data'],rawOcrText:'secret'}
+    const result=inspectTransfer(JSON.stringify({format:'kartvizit',version:1,cards:[valid,{},valid]}))
+    expect(result.invalid).toBe(2)
+    expect(result.cards).toHaveLength(1)
+    expect(result.cards[0]).toMatchObject({fullName:'Örnek Işık',rawOcrText:''})
+    expect(result.cards[0]).not.toHaveProperty('photos')
+  })
+  it('karar yokken yazmaz; mevcut yerel bilgiyi ve dolu alanı korur',async()=>{
+    const original={...newCard('scan'),fullName:'Yerel Örnek',company:'Yerel firma',rawOcrText:'local OCR',photos:['data:image/jpeg;base64,YQ=='],updatedAt:'2026-01-01T00:00:00.000Z'}
+    const incoming={...original,company:'',jobTitle:'Yeni unvan',updatedAt:'2026-01-02T00:00:00.000Z'}
+    await cards.put(original)
+    try{
+      await expect(importClaudeTransfer([incoming],new Map())).rejects.toThrow('stale')
+      expect(await cards.get(original.id)).toMatchObject({jobTitle:''})
+      const decision={choice:'incoming' as const,targetId:original.id,targetState:transferState(original)}
+      expect(await importClaudeTransfer([incoming],new Map([[incoming.id,decision]]))).toMatchObject({updated:1,conflicts:1})
+      expect(await cards.get(original.id)).toMatchObject({company:'Yerel firma',jobTitle:'Yeni unvan',photos:original.photos,rawOcrText:'local OCR'})
+      expect(await importClaudeTransfer([incoming],new Map())).toMatchObject({duplicates:1,updated:0})
+    }finally{await cards.delete(original.id)}
+  })
+  it('AI çıktısına güvenilen kimlik ve tarih ekler; kayıt yazma hatasında başarı bildirmez',async()=>{
+    const [draft]=extractionDrafts(JSON.stringify({cards:[{id:'untrusted',fullName:'Claude Örnek',uncertain:['company'],photos:['x']}]}))
+    expect(draft.card.id).not.toBe('untrusted')
+    expect(draft.card).toMatchObject({fullName:'Claude Örnek',needsReview:true,sourceType:'scan'})
+    expect(draft.card).not.toHaveProperty('photos')
+    expect(()=>extractionDrafts('not-json')).toThrow()
+    const session=createArchive()
+    expect(await session.save([draft.card])).toHaveLength(1)
+    expect(await createArchive().load()).toHaveLength(0)
+    const personal=createArchive({readPrivate:async()=>null,writePrivate:async()=>{throw new Error('denied')}})
+    await expect(personal.save([draft.card])).rejects.toThrow('denied')
+    expect(await personal.load()).toEqual([])
   })
 })

@@ -19,6 +19,14 @@ Kartvizit, fiziksel kartvizitleri Türkçe ve İngilizce OCR ile okuyup yerel bi
 - **Android Chrome** üzerinden üç nokta → Uygulamayı yükle veya Ana ekrana ekle.
 - İnternete bağlıyken **Ayarlar → OCR kaynaklarını indir** seçeneğini kullanın. Yaklaşık 17 MB OCR kaynağı indirilir. **Çevrimdışı tarama hazır** durumu göründüğünde uygulamayı bağlantısız açabilir, tarayabilir ve dışa aktarabilirsiniz.
 
+## Claude ile sunucusuz kullanım
+
+**Tara → JSON aktarımı** bölümünden Kartvizit v1 dosyası seçebilir, JSON yapıştırabilir, kartları dosyaya indirebilir veya panoya kopyalayabilirsiniz. Bu işlemler cihazda çalışır. Özel Yapıt bağlantısı yalnızca kullanıcının cihazında ayarlanabilir.
+
+Aktarım önizleme ve açık kullanıcı onayı gerektirir. Fotoğraflar ve ham OCR aktarımda çıkarılır; tam yerel yedek davranışı değişmez. Otomatik eşitleme veya silme yayılımı yoktur. Çakışma algılandığında kayıtlar karşılaştırılır ve seçiminiz beklenir.
+
+[Mimari](docs/ARCHITECTURE.md) · [Claude entegrasyonu](docs/CLAUDE-INTEGRATION.md) · [Artifact yayınlama](docs/ARTIFACT-DEPLOYMENT.md) · [Test](docs/TESTING.md) · [Gizlilik](docs/PRIVACY.md) · [Kullanım](docs/USER-GUIDE.md)
+
 ## Veri ve yedekleme
 
 Tesseract.js, WASM motorunu bir Web Worker içinde çalıştırır. Görsel işleme ve kural tabanlı alan ayrıştırma cihazda yapılır. Kartvizitler Dexie üzerinden IndexedDB’ye yazılır. Fotoğraf saklama tercihi varsayılan olarak kapalıdır. Etkinleştirildiğinde yeni taramaların küçültülmüş JPEG kopyaları saklanır.
@@ -38,6 +46,7 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run build:artifact
 npx playwright install chromium
 npm run e2e
 ```
@@ -58,3 +67,4 @@ GitHub Pages kaynağı **GitHub Actions** olarak ayarlandığında `main` dalın
 ## Teknik bileşenler
 
 React, strict TypeScript, Vite, Tailwind CSS, Lucide, Tesseract.js, Dexie, Zod, write-excel-file ve Workbox. OCR sağlayıcısı ile ayrıştırıcı ayrı modüllerdir.
+

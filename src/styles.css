@@ -1,8 +1,6 @@
 @import "tailwindcss";
+@import "./design-tokens.css";
 
-:root{font:16px/1.5 "Inter",system-ui,-apple-system,sans-serif;color-scheme:light;--bg:#f6f8fc;--surface:#fff;--subtle:#f0f4fa;--text:#14213a;--muted:#56657e;--line:#e0e7f1;--primary:#2156db;--primary-hover:#1845b9;--soft:#eaf1ff;--blue:#214fbf;--amber:#875300;--warning:#fff2d8;--red:#ad2439;--green:#17704f;--nav:#101e38;--nav-muted:#a9bad6;--nav-line:#263754;--radius:16px;background:var(--bg);color:var(--text)}
-:root[data-theme=dark]{color-scheme:dark;--bg:#111a2b;--surface:#18243a;--subtle:#23314a;--text:#edf2fd;--muted:#b7c5dd;--line:#34445d;--primary:#3265e9;--primary-hover:#2456db;--soft:#20366a;--blue:#abc3ff;--amber:#ffdb91;--warning:#402e17;--red:#ff9caa;--green:#79dfb4}
-@media(prefers-color-scheme:dark){:root[data-theme=system]{color-scheme:dark;--bg:#111a2b;--surface:#18243a;--subtle:#23314a;--text:#edf2fd;--muted:#b7c5dd;--line:#34445d;--primary:#3265e9;--primary-hover:#2456db;--soft:#20366a;--blue:#abc3ff;--amber:#ffdb91;--warning:#402e17;--red:#ff9caa;--green:#79dfb4}}
 *{box-sizing:border-box}
 body{margin:0;min-width:280px}
 button,a,input,select,textarea,summary{-webkit-tap-highlight-color:transparent}
@@ -166,3 +164,14 @@ dialog>.actions,dialog>p{margin-top:10px}
 @media(max-width:1000px){.layout{grid-template-columns:197px minmax(0,1fr)}main,.topbar{padding-inline:22px}.metric{padding:11px;gap:8px}.toolbar{grid-template-columns:repeat(3,minmax(0,1fr))}.search{grid-column:1/-1}}
 @media(max-width:700px){.layout{display:block}.sidebar,.breadcrumb{display:none}.topbar{height:auto;min-height:58px;padding:calc(env(safe-area-inset-top) + 7px) max(14px,env(safe-area-inset-right)) 7px max(14px,env(safe-area-inset-left))}.mobile-brand{display:flex;font-size:1rem;font-weight:800;color:var(--text);letter-spacing:-.025em}.mobile-brand svg{color:var(--blue)}main{padding:18px max(13px,env(safe-area-inset-right)) calc(85px + env(safe-area-inset-bottom)) max(13px,env(safe-area-inset-left))}.bottom-nav{position:fixed;z-index:3;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:4px max(5px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(5px,env(safe-area-inset-left));background:var(--surface);border-top:1px solid var(--line)}.bottom-nav button{flex-direction:column;gap:4px;padding:4px 1px;border-color:transparent;background:transparent;font-size:.72rem;min-height:54px;color:var(--muted)}.bottom-nav button.active{color:var(--blue);background:var(--soft)}.bottom-nav .scan-nav svg{width:27px;height:27px;padding:4px;border-radius:6px;color:white;background:var(--primary)}.toast{bottom:calc(76px + env(safe-area-inset-bottom))}.archive-flow,.screen-flow{gap:14px}.hero{min-height:208px}.hero-copy{padding:16px;max-width:77%}.hero p{font-size:.85rem}.hero-art{left:69%;opacity:.64}.art-card{width:85%;min-width:100px;left:60%}.focus-frame{inset-inline:8%}.metrics{gap:6px}.metric{padding:8px;gap:6px;min-height:80px;flex-wrap:wrap;align-content:center}.metric p{font-size:.73rem}.metric strong{font-size:1.35rem}.stat-icon{width:29px;height:29px}.stat-icon svg{width:15px;height:15px}.archive-section,.panel{padding:12px}.toolbar{gap:5px}.filter{padding:0 5px;gap:3px}.filter svg:first-child{display:none}.filter svg:last-child{width:12px}.filter select{font-size:.75rem}.form-grid,.side-grid{grid-template-columns:1fr}.contact-main .review-pill{display:none}.preview-image{height:175px}.preview-image img{max-height:150px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+.scan-methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:.75rem}
+.scan-methods>button{text-align:start;min-height:5.5rem;justify-content:flex-start;align-items:flex-start;padding:1rem}
+.scan-methods>button span{display:grid;gap:.25rem}
+.scan-methods>button small{font-size:.85rem;font-weight:400}
+#content [hidden]{display:none}
+
+.claude-transfer label:has(textarea),.claude-transfer label:has(select),.claude-transfer label:has(input[type=url]){display:grid;gap:.35rem;font-weight:650}
+.claude-transfer :is(textarea,select,input[type=url]){width:100%;max-width:100%;border:1px solid var(--line);border-radius:9px;padding:.65rem .75rem;background:var(--surface);color:var(--text);min-height:44px}
+.claude-transfer textarea{resize:vertical}
+.claude-transfer summary{cursor:pointer;color:var(--blue);font-weight:650}
