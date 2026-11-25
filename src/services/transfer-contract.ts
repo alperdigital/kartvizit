@@ -1,4 +1,4 @@
-import { cardSchema, duplicates, fold, normalizePhone, type Card } from './card-contract'
+import { cardSchema, duplicates, fold, normalizePhone,normalizedCardName, type Card } from './card-contract'
 import { backup, readBackup } from './file-contract'
 
 export const transferLimit=50*1024*1024
@@ -75,6 +75,7 @@ export function planTransfer(input:TransferInput,archive:Card[],decisions?:Reado
     ...card.emailAddresses.map(email=>email.trim().toLowerCase()).filter(Boolean).map(email=>'e:'+email),
     ...card.phoneNumbers.map(phone=>normalizePhone(phone.number)).filter(phone=>phone.length>=7).map(phone=>'p:'+phone),
     ...(card.company.trim()?['c:'+fold(card.company)]:[]),
+    ...(normalizedCardName(card)?['n:'+normalizedCardName(card)]:[]),
   ]
   function indexCard(card:Card){
     for(const key of keys(card)){

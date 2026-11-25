@@ -13,13 +13,52 @@ function loadLink(){
     return override && override!==obsoleteExample ? override : ''
   }catch{return ''}
 }
-export function artifactUrl(value:string){
-  try{
-    const url=new URL(value)
-    return ['https://claude.ai','https://claude.com'].includes(url.origin) && /^\/(artifact|artifacts|public\/artifacts)\/[A-Za-z0-9_-]+\/?$/.test(url.pathname)
-      && !url.username && !url.password && !url.search && !url.hash && url.href.replace(/\/$/,'')!==obsoleteExample ? url.href : undefined
-  }catch{return undefined}
+export function artifactUrl(value: string) {
+  try {
+    const url = new URL(value)
+    if (!['https://claude.ai', 'https://claude.com'].includes(url.origin) ||
+      url.username || url.password || url.hash) return undefined
+    const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
+    const parts = url.pathname.split('/').filter(Boolean)
+    const id = parts.length === 3 && parts[0] === 'code' && parts[1] === 'artifact' ? parts[2] :
+      parts.length === 2 && parts[0] === 'chat' && uuid.test(parts[1]) ? url.searchParams.get('artifact') : null
+    if (id && uuid.test(id)) return 'https://claude.ai/code/artifact/' + id
+    if (!url.search && /^\/(artifact|artifacts|public\/artifacts)\/[A-Za-z0-9_-]+\/?$/.test(url.pathname) &&
+      url.href.replace(/\/$/,'') !== obsoleteExample) return url.href
+  } catch {
+    return undefined
+  }
 }
+function setLocalArtifact(value: string) {
+  try {
+    const link = artifactUrl(value)
+    if (link) localStorage.setItem(linkKey, link)
+    else if (!value.trim()) localStorage.removeItem(linkKey)
+  } catch { /* Storage can be unavailable. */ }
+}
+
+export function ClaudeScan({t, online}:{t:Translate;online:boolean}) {
+  const [link, setLink] = useState(loadLink)
+  const url = artifactUrl(link)
+  return <section className="panel screen-flow claude-transfer" aria-label={t('Claude taraması','Claude scan')}>
+    <h2>{t('Claude ile kartvizit tara','Scan a business card with Claude')}</h2>
+    <p>{t('Görseli Claude Yapıtında yükleyin. Tarama için internet ve Yapıta erişimi olan bir Claude hesabı gerekir. Tarama hesabınızın Claude kotasından kullanır.','Upload the image in the Claude Artifact. Scanning requires internet access and a Claude account with access to the Artifact. Scans use your Claude quota.')}</p>
+    <label>{t('Özel Claude Yapıtı bağlantısı','Private Claude Artifact link')}
+      <input type="url" value={link} onChange={event=>{
+        const value = event.target.value
+        setLink(value)
+        setLocalArtifact(value)
+      }}/>
+    </label>
+    {link && !url && <p role="alert">{t('Geçerli bir Claude Yapıtı bağlantısı girin.','Enter a valid Claude Artifact link.')}</p>}
+    {!online ? <p role="status">{t('Claude taraması için internete bağlanın.','Connect to the internet to scan with Claude.')}</p> :
+      <a className="button primary" href={url || 'https://claude.ai/login'} target="_blank" rel="noopener noreferrer">
+        <ExternalLink/>{url ? t('Claude ile giriş yap ve tara','Sign in with Claude and scan') : t('Claude ile giriş yap','Sign in with Claude')}
+      </a>}
+    {!url && <p>{t('Taramayı açmak için hesabınızdaki Yapıt bağlantısını girin. Bağlantı bu cihazda saklanır.','Enter the Artifact link from your account to open scanning. The link is stored on this device.')}</p>}
+  </section>
+}
+
 const choices:TransferChoice[]=['keep','incoming','merge','separate','skip']
 export function ClaudeTransfer({t,notify,online,setup=false}:{t:Translate;notify:(message:string)=>void;online?:boolean;setup?:boolean}){
   const [connected,setConnected]=useState(navigator.onLine)
@@ -88,7 +127,7 @@ export function ClaudeTransfer({t,notify,online,setup=false}:{t:Translate;notify
     {setup&&<details><summary>{t('Özel Artifact bağlantısı (isteğe bağlı)','Private Artifact link (optional)')}</summary>
       <label>{t('Claude Artifact bağlantısı','Claude Artifact link')}<input type="url" value={link} onChange={e=>{
         setLink(e.target.value)
-        try{localStorage.setItem(linkKey,e.target.value)}catch{/* optional preference */}
+        setLocalArtifact(e.target.value)
       }}/></label>
       {link&&!url&&<p role="alert">{t('Geçerli bir Claude Artifact bağlantısı girin.','Enter a valid Claude Artifact link.')}</p>}
     </details>}

@@ -4,7 +4,7 @@ import { liveQuery } from 'dexie'
 import { registerSW } from 'virtual:pwa-register'
 import { Archive as ArchiveIcon, Check, ContactRound, Copy, Download, HardDrive, Plus, ScanLine, ArrowLeftRight, Settings as SettingsIcon, ShieldCheck, Star, Wifi, WifiOff, X } from 'lucide-react'
 import { Archive } from './features/Archive'
-import { ClaudeTransfer } from './features/ClaudeTransfer'
+import { ClaudeScan, ClaudeTransfer } from './features/ClaudeTransfer'
 import { claudeExport } from './services/claude-transfer'
 import { Detail } from './features/Detail'
 import { Editor } from './features/Editor'
@@ -26,7 +26,7 @@ function Modal({title,children,close}:{title:string;children:ReactNode;close:()=
 }
 function App(){
   const [page,setPage]=useState<Page>('archive')
-  const [method,setMethod]=useState<'device'|'claude'>()
+  const [method,setMethod]=useState<'device'|'claude'|'claude-scan'>()
   const [settings,setSettings]=useState(loadSettings)
   const [data,setData]=useState(empty)
   const [detail,setDetail]=useState<string>()
@@ -107,10 +107,12 @@ function App(){
         {page==='scan'&&<div hidden={!!editor} className="screen-flow">
           <div className="page-heading"><div><p className="eyebrow"><span/>{t('YENİ KARTVİZİT','NEW BUSINESS CARD')}</p><h1>{t('Nasıl eklemek istersiniz?','How would you like to add a card?')}</h1></div></div>
           <div className="scan-methods">
+            <button className={method==='claude-scan'?'primary':''} aria-pressed={method==='claude-scan'} onClick={()=>setMethod('claude-scan')}>{t('Claude ile Tara','Scan with Claude')}</button>
             <button className={method==='device'?'primary':''} aria-pressed={method==='device'} onClick={()=>setMethod('device')}><ScanLine/><span><strong>{t('Cihazda Tara','Scan on device')}</strong><small>{t('OCR kaynakları indirildikten sonra çevrimdışı çalışır.','Works offline after OCR resources are downloaded.')}</small></span></button>
             <button className={method==='claude'?'primary':''} aria-pressed={method==='claude'} onClick={()=>setMethod('claude')}><ArrowLeftRight/><span><strong>{t('JSON aktarımı','JSON transfer')}</strong><small>{t('Kartvizitleri dosyadan veya panodan alıp verin.','Import and export cards by file or clipboard.')}</small></span></button>
             <button onClick={()=>openEditor(newCard())}><Plus/><span><strong>{t('Manuel ekle','Add manually')}</strong><small>{t('Alanları kendiniz doldurun.','Fill in the fields yourself.')}</small></span></button>
           </div>
+          {method==='claude-scan'&&<ClaudeScan t={t} online={online}/>}
           {method==='claude'&&<ClaudeTransfer t={t} notify={setToast} online={online}/>}
           {method&&<div hidden={method!=='device'}><div className="scan-status"><HardDrive/> {status} {ocrStatus!==true&&<button className="plain" onClick={()=>void prepare()}>{t('OCR kaynaklarını indir','Download OCR resources')}</button>}</div><Scanner t={t} settings={settings} onReview={openEditor} saved={saved} manual={()=>openEditor(newCard())}/></div>}
         </div>}
