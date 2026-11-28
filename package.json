@@ -16,14 +16,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alperdigital/kartvizit.git"
+    "url": "git+https://github.com/duayenalper/kartvizit.git"
   },
   "license": "UNLICENSED",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/alperdigital/kartvizit/issues"
+    "url": "https://github.com/duayenalper/kartvizit/issues"
   },
-  "homepage": "https://github.com/alperdigital/kartvizit#readme",
+  "homepage": "https://github.com/duayenalper/kartvizit#readme",
   "dependencies": {
     "@tesseract.js-data/eng": "1.0.0",
     "@tesseract.js-data/tur": "1.0.0",

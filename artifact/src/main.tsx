@@ -192,7 +192,7 @@ export function App({ports={}}:{ports?:Ports}){
         <div className="actions"><button disabled={!ready||working||!!conflict||!transfer?.cards.length} onClick={()=>void commit()}>{t('Arşive kaydet','Save to archive')}</button><button disabled={working} onClick={()=>{setTransfer(undefined);setDecisions(new Map())}}>{t('İptal','Cancel')}</button></div>
       </article>}
     </section>}
-    <footer><a href="https://alperdigital.github.io/kartvizit/" target="_blank" rel="noopener noreferrer">{t('Kartvizit PWA’ya dön','Return to Kartvizit PWA')} ↗</a></footer>
+    <footer><a href="https://duayenalper.github.io/kartvizit/" target="_blank" rel="noopener noreferrer">{t('Kartvizit PWA’ya dön','Return to Kartvizit PWA')} ↗</a></footer>
   </main>
 }
 

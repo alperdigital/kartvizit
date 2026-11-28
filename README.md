@@ -2,8 +2,8 @@
 
 Kartvizit, fiziksel kartvizitleri Türkçe ve İngilizce OCR ile okuyup yerel bir arşive dönüştüren mobil öncelikli bir PWA’dır.
 
-- [Kaynak deposu](https://github.com/alperdigital/kartvizit)
-- [GitHub Pages yayın hedefi](https://alperdigital.github.io/kartvizit/)
+- [Kaynak deposu](https://github.com/duayenalper/kartvizit)
+- [GitHub Pages yayın hedefi](https://duayenalper.github.io/kartvizit/)
 
 ## Kullanım
 
