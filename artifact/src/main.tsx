@@ -141,7 +141,7 @@ export function App({ports={}}:{ports?:Ports}){
   }
   async function download(value:string,filename:string,type:string){try{await deliver(new File([value],filename,{type}))}catch{setError(t('Dosya indirilemedi.','Download failed.'))}}
   return <main>
-    <header><div><p className="kicker">KARTVİZİT / CLAUDE</p><h1>{t('Kartvizit çalışma alanı','Business card workspace')}</h1><p>{status}</p></div>
+    <header><div><h1>{t('Kartvizit çalışma alanı','Business card workspace')}</h1><p>{status}</p></div>
       <div className="actions"><button onClick={()=>setLang(lang==='tr'?'en':'tr')} aria-label={t('Switch to English','Türkçeye geç')}>{lang==='tr'?'EN':'TR'}</button><button onClick={()=>setDark(!dark)} aria-pressed={dark}>{t('Koyu tema','Dark mode')}</button></div></header>
     <nav aria-label={t('Çalışma alanı','Workspace')}>{(['scan','archive','transfer'] as const).map(key=><button key={key} aria-current={pane===key?'page':undefined} onClick={()=>{setPane(key);setMessage('');setError('')}}>{({scan:t('Tara','Scan'),archive:t('Arşiv','Archive'),transfer:t('JSON aktarımı','JSON transfer')})[key]}</button>)}</nav>
     {message&&<p role="status" className="notice">{message}</p>}{error&&<p role="alert" className="notice error">{error}</p>}

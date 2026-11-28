@@ -2,9 +2,12 @@ import { cards, type Card } from './cards'
 import { backup, csv, readBackup, rows, vcard, type Format } from './file-contract'
 export * from './file-contract'
 
-export async function restore(file:File) {
+export async function readRestoreFile(file:File) {
   if(file.size>50*1024*1024) throw new Error('Backup size')
-  const incoming=readBackup(await file.text())
+  return readBackup(await file.text())
+}
+
+export async function restore(incoming:Card[]) {
   return cards.db.transaction('rw',cards,async()=>{
     const existing=await cards.bulkGet(incoming.map(c=>c.id))
     const fresh=incoming.filter((_,index)=>!existing[index])

@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
 import { cards, combine, duplicates, fold, matches, newCard, normalizePhone, safeUrl } from '../src/services/cards'
-import { backup, csv, formulaSafe, makeFile, readBackup, restore, vcard } from '../src/services/export'
+import { backup, csv, formulaSafe, makeFile, readBackup, readRestoreFile, restore, vcard } from '../src/services/export'
 import { claudeExport, parseClaudeTransfer, importClaudeTransfer, inspectTransfer, transferState } from '../src/services/claude-transfer'
 import { createArchive, extractionDrafts } from '../artifact/src/providers'
 import { BusinessCardParser } from '../src/services/parser'
@@ -68,7 +68,7 @@ describe('Dosyalar ve kalıcılık',()=>{
     await cards.put(record)
     const added={...newCard(),fullName:'Yedek Kayıt'}
     const file=new File([backup([{...record,notes:'üzerine yazma'},added])],'backup.json')
-    expect(await restore(file)).toEqual({added:1,skipped:1})
+    expect(await restore(await readRestoreFile(file))).toEqual({added:1,skipped:1})
     expect(await cards.get(record.id)).toEqual(record)
     expect(await cards.get(added.id)).toEqual(added)
     await cards.bulkDelete([record.id,added.id])

@@ -12,7 +12,7 @@ export default defineConfig({
     manifest: {
       id: '/kartvizit/', name: 'Kartvizit', short_name: 'Kartvizit', lang: 'tr',
       start_url: '/kartvizit/', scope: '/kartvizit/', display: 'standalone',
-      theme_color: '#101e38', background_color: '#f6f7fa',
+      theme_color: '#142b24', background_color: '#f5f2e9',
       icons: [
         {src:'icons/192.png', sizes:'192x192', type:'image/png'},
         {src:'icons/512.png', sizes:'512x512', type:'image/png'},

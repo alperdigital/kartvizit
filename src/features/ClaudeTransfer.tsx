@@ -134,15 +134,18 @@ export function ClaudeTransfer({t,notify,online,setup=false}:{t:Translate;notify
     {!ready?<p role="status">{t('İnternet bağlantısı yok. JSON aktarımını kullanabilirsiniz.','No internet connection. JSON transfer is still available.')}</p>
       :url?<a className="button primary" href={url} target="_blank" rel="noopener noreferrer"><ExternalLink/>{t('Claude’da aç','Open in Claude')}</a>
       :null}
+    <section className="screen-flow transfer-section">
     <h3>{t('JSON dışa aktar','Export JSON')}</h3>
-    <p>{t('Tüm kartların ayrıştırılmış bilgileri aktarılır; fotoğraf ve ham OCR metni dahil edilmez. Seçili kartlar için arşivin Dışa aktar menüsünü kullanın.','Transfer structured data for all cards without photos or raw OCR. For selected cards, use the archive Export menu.')}</p>
+    <p>{t('Bu aktarım sadece kart alanlarını içerir. Seçili kartlar için arşivin Dışa aktar menüsünü kullanın.','This transfer includes card fields only. For selected cards, use the archive Export menu.')}</p>
     <div className="actions"><button disabled={busy} onClick={()=>void send('download')}><Download/>{t('JSON indir','Download JSON')}</button><button disabled={busy} onClick={()=>void send('copy')}><Copy/>{t('JSON kopyala','Copy JSON')}</button>
       {typeof navigator.canShare==='function'&&<button disabled={busy} onClick={()=>void send('share')}><Share2/>{t('JSON paylaş','Share JSON')}</button>}</div>
+    </section>
+    <section className="screen-flow transfer-section">
     <h3>{t('JSON içe aktar','Import JSON')}</h3>
     <label className="button file-button"><Upload/>{t('JSON dosyası seç','Choose JSON file')}<input disabled={busy} type="file" accept=".json,application/json" aria-label={t('Kartvizit JSON dosyası','Kartvizit JSON file')} onChange={e=>{void read(e.target.files?.[0]);e.target.value=''}}/></label>
     <label>{t('Veya JSON yapıştır','Or paste JSON')}<textarea disabled={busy} rows={4} value={text} onChange={e=>{setText(e.target.value);reset()}}/></label>
     <button disabled={busy||!text.trim()} onClick={()=>void inspect(text)}>{t('Aktarımı kontrol et','Validate transfer')}</button>
-    {preview&&plan&&<div className="screen-flow"><p role="status">{t('Önizleme: ','Preview: ')}{summary(plan.report)}. {t('Silmeler aktarılmaz.','Deletions are not transferred.')}</p>
+    {preview&&plan&&<div className="screen-flow"><p className="scan-status" role="status">{t('Önizleme: ','Preview: ')}{summary(plan.report)}. {t('Silmeler aktarılmaz.','Deletions are not transferred.')}</p>
       <ul>{preview.input.cards.slice(0,10).map(c=><li key={c.id}>{labelOf(c)||c.emailAddresses[0]||c.id}</li>)}</ul>
       {needsDecision&&<div className="notice screen-flow" key={needsDecision.incoming.id}><p role="alert"><strong>{t('Kartvizit çakışması','Card conflict')}</strong> {t('Aktarmadan önce mevcut ve gelen kaydı karşılaştırıp bir karar seçin.','Compare the existing and incoming cards and choose how to resolve the conflict before importing.')}</p>
         <p>{t('Gelen','Incoming')}: {labelOf(needsDecision.incoming)||needsDecision.incoming.id} · {needsDecision.incoming.company} · {needsDecision.incoming.updatedAt} · {needsDecision.incoming.emailAddresses.join(', ')} · {needsDecision.incoming.phoneNumbers.map(p=>p.number).join(', ')}</p>
@@ -158,7 +161,8 @@ export function ClaudeTransfer({t,notify,online,setup=false}:{t:Translate;notify
       </div>}
       <div className="actions"><button className="primary" disabled={busy||!!needsDecision||!preview.input.cards.length} onClick={()=>void save()}>{t('Arşive aktar','Import into archive')}</button><button disabled={busy} onClick={reset}>{t('İptal','Cancel')}</button></div>
     </div>}
-    {report&&<p role="status">{summary(report)}</p>}
-    {error&&<p role="alert">{error}</p>}
+    {report&&<p className="scan-status" data-state="ready" role="status">{summary(report)}</p>}
+    {error&&<p className="notice" role="alert">{error}</p>}
+    </section>
   </section>
 }
