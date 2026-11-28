@@ -63,6 +63,11 @@ function App(){
   function go(next:Page){setPage(next);setEditor(undefined);setDetail(undefined);if(next!=='scan'){setSaved([]);setMethod(undefined)};window.scrollTo(0,0)}
   function showDetail(id:string){setDetail(id);window.scrollTo(0,0)}
   function openEditor(card:Card,scanId?:string,previews?:ScanPreview[]){setEditor({card,scanId,previews});window.scrollTo(0,0)}
+  function closeEditor(){
+    setEditor(undefined)
+    window.scrollTo(0,0)
+    requestAnimationFrame(()=>window.scrollTo(0,0))
+  }
   async function favorite(c:Card){
     try{await cards.db.transaction('rw',cards,async()=>{const current=await cards.get(c.id);if(current)await cards.update(c.id,{isFavorite:!current.isFavorite,updatedAt:new Date().toISOString()})})}
     catch{setToast(t('Favori güncellenemedi.','Could not update favorite.'))}
@@ -124,8 +129,8 @@ function App(){
           {method==='claude'&&<ClaudeTransfer t={t} notify={setToast} online={online}/>}
           {method&&<div hidden={method!=='device'} className="screen-flow"><div className="scan-status" data-state={ocrState}><HardDrive/><span role="status">{status}</span>{ocrStatus!==true&&<button className="plain" disabled={ocrState==='loading'} onClick={()=>void prepare()}>{t('OCR kaynaklarını indir','Download OCR resources')}</button>}</div><Scanner t={t} settings={settings} onReview={openEditor} saved={saved}/></div>}
         </div>}
-        {editor?<Editor key={editor.card.id} initial={editor.card} previews={editor.previews} t={t} close={()=>setEditor(undefined)} rescan={editor.scanId?()=>setEditor(undefined):undefined} onSaved={id=>{
-          if(editor.scanId){setSaved(old=>[...old,editor.scanId!]);setEditor(undefined)}
+        {editor?<Editor key={editor.card.id} initial={editor.card} previews={editor.previews} t={t} close={closeEditor} rescan={editor.scanId?closeEditor:undefined} onSaved={id=>{
+          if(editor.scanId){setSaved(old=>[...old,editor.scanId!]);closeEditor()}
           else {go('archive');showDetail(id)}
           setToast(t('Kartvizit kaydedildi.','Card saved.'))
         }}/>:

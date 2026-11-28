@@ -55,7 +55,7 @@ export function Editor({initial,previews,t,close,onSaved,rescan}:{initial:Card;p
     finally {setSaving(false)}
   }
   return <form className="screen-flow" onSubmit={e=>{e.preventDefault();void save()}}>
-    <div className="page-heading"><div><h1>{initial.sourceType==='scan'?t('Kartviziti kontrol et','Review business card'):t('Kartvizit bilgileri','Business card details')}</h1><p>{t('İletişim bilgilerini kaydetmeden önce doğrulayın.','Verify the contact details before saving.')}</p></div><button type="button" className="icon-button" aria-label={t('Kapat','Close')} onClick={close}><X/></button></div>
+    <div className="page-heading editor-heading"><div><h1>{initial.sourceType==='scan'?t('Kartviziti kontrol et','Review business card'):t('Kartvizit bilgileri','Business card details')}</h1><p>{t('İletişim bilgilerini kaydetmeden önce doğrulayın.','Verify the contact details before saving.')}</p></div><button type="button" className="icon-button" aria-label={t('Kapat','Close')} onClick={close}><X/></button></div>
     <div className={visibleSide?'editor-layout with-reference':'editor-layout'}>
     {visibleSide&&<aside className="panel scan-reference" aria-label={t('Kartvizit önizlemesi','Card preview')}>
       <div className="section-heading"><h2><ScanLine/>{t('Kartvizit görseli','Card image')}</h2><button type="button" className="preview-toggle" aria-controls="editor-preview" aria-expanded={showPreview} onClick={()=>setShowPreview(!showPreview)}>{showPreview?t('Gizle','Hide'):t('Göster','Show')}</button></div>
